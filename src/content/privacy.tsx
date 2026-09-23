@@ -1,12 +1,14 @@
 import type { Doc } from './doc';
 
 /**
- * Transcribed verbatim from https://ewenn.app/privacy.html (last updated 30 August 2026), and
- * revised on 21 September 2026 for the app's avatars (the app repo's `_specs/profile-avatars.md`).
+ * Transcribed verbatim from https://ewenn.app/privacy.html (last updated 30 August 2026),
+ * revised on 21 September 2026 for the app's avatars (the app repo's `_specs/profile-avatars.md`),
+ * and again on 23 September 2026 when the app stopped using the Google profile photo.
  *
  * Every claim here is a description of the app's code rather than boilerplate -- no photo
- * leaves the device because the project has no Cloud Storage, and the only picture another
- * user sees is a preset or a Google photo the server resolves (`functions/src/avatar.ts`); the Gemini
+ * leaves the device because the project has no Cloud Storage, and no avatar another user sees
+ * is a picture: it is a figure or a preset drawn from the app's own art (`functions/src/avatar.ts`
+ * resolves nothing else); the Gemini
  * disclosure is conditional because the app picks the on-device model when there is one;
  * "no analytics" is the vendor floor the app holds itself to. If any of those change,
  * this file and the date at the top change in the same commit.
@@ -18,7 +20,7 @@ import type { Doc } from './doc';
 export const PRIVACY_DOC: Doc = {
   title: 'Privacy Policy',
   description: 'How Ewenn handles your data.',
-  updated: 'Last updated 21 September 2026',
+  updated: 'Last updated 23 September 2026',
   path: '/privacy/',
   body: (
     <>
@@ -59,8 +61,8 @@ export const PRIVACY_DOC: Doc = {
           The <strong>name you give your penguin</strong>, and the date you joined.
         </li>
         <li>
-          Your <strong>avatar</strong> — one of Ewenn's own pictures or, if you sign in with Google,
-          your Google profile photo.
+          Your <strong>avatar</strong>, which is made from Ewenn's own pictures and is never a
+          photo.
         </li>
       </ul>
 
@@ -102,9 +104,8 @@ export const PRIVACY_DOC: Doc = {
       <div className="doc__note">
         <p>
           <strong>Ewenn never uploads a photo from your iPhone.</strong> It has no photo storage on
-          its servers at all. Your avatar is either one of Ewenn's own pictures or — only if you
-          sign in with Google — the profile photo your Google account already has, which Ewenn links
-          to rather than copies. You can switch to one of Ewenn's pictures, or to none, at any time.
+          its servers at all, and it does not use your Google profile photo. Your avatar is always
+          made from Ewenn's own pictures, and you can change it, or remove it, at any time.
         </p>
       </div>
 
