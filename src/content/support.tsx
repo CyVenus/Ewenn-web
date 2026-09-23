@@ -133,10 +133,11 @@ export const SUPPORT_DOC: Doc = {
 
       <h2>Goals and AI-suggested steps</h2>
       <p>
-        Ewenn can suggest checklist steps for a goal. On iPhones that support Apple Intelligence this
-        happens entirely on your device and nothing is sent anywhere. On other iPhones, the goal's
-        title, description and current steps are sent to Google's Gemini API to generate the
-        suggestions.
+        Ewenn can suggest checklist steps for a goal. For a free account on an iPhone or iPad with
+        Apple Intelligence, this happens on your device and nothing is sent anywhere. Otherwise — and
+        for Rewenn subscribers — the goal's title and description (and, for a rewrite, its current
+        steps and your instruction) are sent to Google's Gemini API, but only after you allow it: the
+        app asks first and names Gemini. Choose Not Now and nothing is sent.
       </p>
       <p>
         Suggestions are generated automatically and may be wrong, odd or unhelpful — please use your

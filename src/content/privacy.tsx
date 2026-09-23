@@ -3,13 +3,16 @@ import type { Doc } from './doc';
 /**
  * Transcribed verbatim from https://ewenn.app/privacy.html (last updated 30 August 2026),
  * revised on 21 September 2026 for the app's avatars (the app repo's `_specs/profile-avatars.md`),
- * and again on 23 September 2026 when the app stopped using the Google profile photo.
+ * and again on 23 September 2026 when the app stopped using the Google profile photo, and the
+ * same day when the app began asking before it sends a goal to Gemini (Guideline 5.1.2(i);
+ * the app repo's `GoalStepConsent`) and Resend was added to the list of services.
  *
  * Every claim here is a description of the app's code rather than boilerplate -- no photo
  * leaves the device because the project has no Cloud Storage, and no avatar another user sees
  * is a picture: it is a figure or a preset drawn from the app's own art (`functions/src/avatar.ts`
  * resolves nothing else); the Gemini
- * disclosure is conditional because the app picks the on-device model when there is one;
+ * disclosure is conditional because the app asks first and uses the on-device model for a free
+ * account whenever there is one -- a Rewenn account asks Gemini first on every device;
  * "no analytics" is the vendor floor the app holds itself to. If any of those change,
  * this file and the date at the top change in the same commit.
  *
@@ -128,14 +131,16 @@ export const PRIVACY_DOC: Doc = {
           account and everything listed above is stored here.
         </li>
         <li>
-          <strong>Google Gemini</strong> — when you ask Ewenn to suggest checklist steps for a goal,
-          the goal's <em>title, description and current steps</em> are sent to Google's Gemini API to
-          generate them.{' '}
-          <strong>
-            On iPhones that support Apple Intelligence this happens entirely on your device and
-            nothing is sent at all.
-          </strong>{' '}
-          The app chooses the on-device model whenever it is available.
+          <strong>Google Gemini</strong> — <strong>only if you allow it.</strong> To suggest
+          checklist steps for a goal, Ewenn sends the goal's <em>title and description</em> — and, for
+          a rewrite, <em>its current steps and your instruction</em> — to Google's Gemini API. The app
+          asks before it sends anything and names Gemini when it does; if you choose Not Now, nothing
+          is sent. For a free account on an iPhone or iPad with Apple Intelligence, suggestions are
+          made on the device and nothing is sent at all. Rewenn subscribers' suggestions use Gemini.
+        </li>
+        <li>
+          <strong>Resend</strong> — delivers Ewenn's emails, such as the six-digit code that verifies
+          an email sign-up. It receives your email address.
         </li>
         <li>
           <strong>Apple</strong> — Sign in with Apple, App Store purchases, and App Attest.
