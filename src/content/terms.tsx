@@ -1,7 +1,10 @@
 import type { Doc } from './doc';
 
 /**
- * Transcribed verbatim from https://ewenn.app/terms.html (last updated 30 August 2026).
+ * Transcribed verbatim from https://ewenn.app/terms.html (last updated 30 August 2026), and
+ * revised on 23 September 2026 for Guideline 1.2: zero tolerance for objectionable content and
+ * abusive users, reports acted on within 24 hours, and the app's sign-in screens now say that
+ * continuing is agreeing to these terms (the app repo's `LegalLinks.agreementLine`).
  *
  * Apple's Guideline 3.1.2 requires a functional Terms of Use link inside the binary, on
  * the purchase screen -- the Rewenn paywall links here, so the published `/terms.html`
@@ -21,7 +24,7 @@ import type { Doc } from './doc';
 export const TERMS_DOC: Doc = {
   title: 'Terms of Use',
   description: 'The terms for using Ewenn.',
-  updated: 'Last updated 30 August 2026',
+  updated: 'Last updated 23 September 2026',
   path: '/terms/',
   body: (
     <>
@@ -119,8 +122,10 @@ export const TERMS_DOC: Doc = {
         <li>Use the app for anything unlawful.</li>
       </ul>
       <p>
-        You can block another user from their profile at any time. We may suspend or remove an
-        account that breaks these rules.
+        <strong>Ewenn has zero tolerance for objectionable content and abusive users.</strong> You can
+        block another user from their profile at any time, and report one from the same menu. We act
+        on every report within 24 hours: content that breaks these rules is removed, and so is the
+        account that posted it.
       </p>
 
       <h2>Your content</h2>

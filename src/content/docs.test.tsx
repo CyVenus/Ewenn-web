@@ -44,7 +44,7 @@ describe.each(DOCS)('%s document', (name, doc) => {
 describe('legal invariants', () => {
   it('keeps the published dates on privacy and terms', () => {
     expect(PRIVACY_DOC.updated).toBe('Last updated 23 September 2026');
-    expect(TERMS_DOC.updated).toBe('Last updated 30 August 2026');
+    expect(TERMS_DOC.updated).toBe('Last updated 23 September 2026');
   });
 
   it('reaches the same contact address from every document', () => {
