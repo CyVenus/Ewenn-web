@@ -72,6 +72,8 @@ for (const pageDef of PAGES) {
   // The documents carry no canvas, so only the home page has a scene to wait for.
   if (pageDef.name === 'home') {
     await page.waitForSelector('.scene.is-ready, .page--scene-failed', { timeout: 20_000 });
+    // The loading animation holds the page until its intro has played; measure what it reveals.
+    await page.waitForSelector('.loader', { state: 'detached', timeout: 20_000 });
   }
   await page.waitForTimeout(pageDef.name === 'home' ? 1200 : 300);
 

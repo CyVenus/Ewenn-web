@@ -103,3 +103,27 @@ the static fallback sky.
 
 Only the sky, the sun and the moon change with the phase. **The ground art has no night variant**,
 so night is where header and footer legibility is tightest — `npm run contrast` measures it.
+
+## The loading animation
+
+A second, much smaller file: `assets/rive/loading-anim.riv` (8 kB), served at
+`/rive/loading-anim.riv` and played by `src/components/LoadingScreen.tsx` over the home page while
+the scene loads. Same runtime, same self-hosted Wasm.
+
+| | |
+|---|---|
+| Artboard | `app_logo`, 628 × 627 — the app icon, full bleed, fill `#74D6EF` |
+| State machine | `State Machine 1`, no inputs; entry goes straight to `intro` |
+| `intro` | One-shot, 120 frames at 60 fps, speed 0.8 — **2.5 s** — then holds the last frame (the wink) |
+| View model | `ViewModel1`, no properties and not linked to the artboard, so **no `autoBind`** (it would only log a warning) |
+
+The site writes nothing to it. The file has no end-of-intro signal either, so the length lives in
+`LOADER_INTRO_SECONDS` in `src/config.ts`. **Change the intro's length, speed or fps in the
+editor and that constant must change with it**: too short, and the loader lifts mid-wave; too long,
+and it holds on a finished frame. `LoadingScreen.test.tsx` pins it at 2.5.
+
+The loader lifts when the intro has played *and* the scene is ready (or has failed), or after
+`LOADER_MAX_MS` of visible time, whichever comes first. Played means animation time the runtime
+actually advanced, so a background tab plays the intro when it is first shown. Under reduced motion
+the tile shows the still logo instead and lifts as soon as the scene is ready. Without WebGL2
+there is no loader at all.

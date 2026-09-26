@@ -2,7 +2,7 @@
  * Copies the protected source artwork in `assets/` to the places the app actually loads it from,
  * and verifies the copies byte-for-byte.
  *
- * `assets/` holds the originals: the Rive export and the two SVGs, none of which this project
+ * `assets/` holds the originals: the two Rive exports and the two SVGs, none of which this project
  * generates. They are needed in two other shapes — `public/` for files served by URL at runtime
  * (the `.riv` is fetched by the runtime, the favicon by the browser) and `src/assets/` for files
  * Vite fingerprints into the bundle. Nothing derives one from the other, so before this script
@@ -22,6 +22,7 @@ const CHECK_ONLY = process.argv.includes('--check');
 /** from → every place it must exist, identical. */
 const COPIES = [
   ['assets/rive/ewenn-scene.riv', 'public/rive/ewenn-scene.riv'],
+  ['assets/rive/loading-anim.riv', 'public/rive/loading-anim.riv'],
   ['assets/app_logo.svg', 'public/favicon.svg'],
   ['assets/app_logo.svg', 'src/assets/app-logo.svg'],
   ['assets/app-store-badge.svg', 'src/assets/app-store-badge.svg'],

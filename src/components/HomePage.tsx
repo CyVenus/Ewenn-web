@@ -5,10 +5,13 @@ import { useReducedMotion } from '../hooks/useReducedMotion';
 import { useStopScroll } from '../hooks/useStopScroll';
 import { useViewportArtboard } from '../hooks/useViewportArtboard';
 import { useZoomLock } from '../hooks/useZoomLock';
-import { copyOpacity } from '../lib/copyReveal';
+import { copyOpacity, focusTitle, setFaded } from '../lib/copyReveal';
 import { stopProgress } from '../lib/scrollProgress';
+import { trailingSentence } from '../lib/sentences';
 import { supportsWebGL2 } from '../lib/webgl';
+import { BlurText, SCRUBBED_MARK_CLASS, SCRUBBED_WORD_CLASS } from './BlurText';
 import { Hero } from './Hero';
+import { LoadingScreen } from './LoadingScreen';
 import { RiveStage } from './RiveStage';
 import { SiteFooter } from './SiteFooter';
 import { SiteHeader } from './SiteHeader';
@@ -25,6 +28,9 @@ export function HomePage() {
   useZoomLock();
   /** Copy blocks in screen order: the hero, then one per stop. Filled by the callback refs below. */
   const copyRefs = useRef<(HTMLElement | null)[]>([]);
+  /** Each block's scrubbed title words and highlighter strokes, same indexing as copyRefs. Found
+      once, not every frame. */
+  const titles = useRef<({ words: HTMLElement[]; marks: HTMLElement[] } | undefined)[]>([]);
   const walkDrivenRef = useRef(false);
   const [walkDriven, setWalkDriven] = useState(false);
   const phase = usePhase();
@@ -35,6 +41,12 @@ export function HomePage() {
   const [webGL2Available] = useState(supportsWebGL2);
   const [sceneFailed, setSceneFailed] = useState(!webGL2Available);
   const onFailed = useCallback(() => setSceneFailed(true), []);
+  const [sceneReady, setSceneReady] = useState(false);
+  const onReady = useCallback(() => setSceneReady(true), []);
+  // The loader runs on the same runtime as the scene. Without WebGL2 there is neither, and nothing
+  // to wait for.
+  const [loading, setLoading] = useState(webGL2Available);
+  const onLift = useCallback(() => setLoading(false), []);
 
   /*
    * Fade each block by where the penguin is, not by where the page has scrolled to. The scroll
@@ -54,8 +66,11 @@ export function HomePage() {
       const opacity = copyOpacity(shown, index);
       node.style.opacity = String(opacity);
       // Pinned, the blocks sit on top of one another, so an invisible hero would still be catching
-      // the taps meant for the stop underneath it — the App Store badge most of all.
-      node.style.pointerEvents = opacity === 0 ? 'none' : '';
+      // the taps and the Tab key meant for the stop underneath it — the App Store badge most of all.
+      setFaded(node, opacity === 0);
+      // The title's words come into focus, and its highlights draw, over the same stretch of the walk.
+      const title = titles.current[index];
+      if (title) focusTitle(title.words, opacity, title.marks);
     });
   }, []);
 
@@ -72,15 +87,16 @@ export function HomePage() {
     copyRefs.current.forEach((node) => {
       if (!node) return;
       node.style.removeProperty('opacity');
-      node.style.removeProperty('pointer-events');
+      setFaded(node, false);
     });
+    titles.current.forEach((title) => title && focusTitle(title.words, 1, title.marks));
   }, [sceneFailed]);
 
   return (
     <div
       className={`page page--home${sceneFailed ? ' page--scene-failed' : ''}${
         walkDriven && !sceneFailed ? ' page--walk-copy' : ''
-      }`}
+      }${loading ? ' page--loading' : ''}`}
     >
       {!sceneFailed && (
         <RiveStage
@@ -90,6 +106,7 @@ export function HomePage() {
           onFailed={onFailed}
           readProgress={readProgress}
           onWalk={onWalk}
+          onReady={onReady}
         />
       )}
       <div className="overlay">
@@ -118,10 +135,22 @@ export function HomePage() {
                 className="stop__copy"
                 ref={(node) => {
                   copyRefs.current[index + 1] = node;
+                  titles.current[index + 1] = node
+                    ? {
+                        words: Array.from(node.querySelectorAll<HTMLElement>(`.${SCRUBBED_WORD_CLASS}`)),
+                        marks: Array.from(node.querySelectorAll<HTMLElement>(`.${SCRUBBED_MARK_CLASS}`)),
+                      }
+                    : undefined;
                 }}
               >
                 <h2 id={`stop-${stop.id}-title`} className="stop__title">
-                  {stop.title}
+                  <BlurText
+                    text={stop.title}
+                    phrase={trailingSentence(stop.title)}
+                    phraseClassName="stop__title-phrase"
+                    marks={stop.marks}
+                    mode="scrubbed"
+                  />
                 </h2>
                 <p className="stop__body">{stop.body}</p>
               </div>
@@ -130,6 +159,9 @@ export function HomePage() {
         </main>
         <SiteFooter />
       </div>
+      {webGL2Available && (
+        <LoadingScreen sceneSettled={sceneReady || sceneFailed} reducedMotion={reducedMotion} onLift={onLift} />
+      )}
     </div>
   );
 }

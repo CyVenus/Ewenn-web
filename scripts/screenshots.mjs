@@ -52,8 +52,11 @@ const GPU_ARGS = [
 /** Waits for the scene to report ready, or for the page to admit it fell back. */
 async function settle(page) {
   await page.waitForSelector('.scene.is-ready, .page--scene-failed', { timeout: 20_000 });
-  // The entrance finishes ~660ms after render; 1500ms keeps the matrix clear of it.
-  await page.waitForTimeout(1500);
+  // The loading animation holds the page until its intro has played; measure what it reveals.
+  await page.waitForSelector('.loader', { state: 'detached', timeout: 20_000 });
+  // The hero's entrance finishes ~1.75s after render, its highlighter stroke last. Without a
+  // scene, "ready" comes almost at once, so the wait has to cover the whole entrance by itself.
+  await page.waitForTimeout(2000);
 }
 
 async function run() {

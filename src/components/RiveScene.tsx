@@ -1,7 +1,5 @@
-import { Fit, Layout, RuntimeLoader, useRive } from '@rive-app/react-webgl2';
+import { Fit, Layout, useRive } from '@rive-app/react-webgl2';
 import type { Rive } from '@rive-app/webgl2';
-import wasmUrl from '@rive-app/webgl2/rive.wasm?url';
-import wasmFallbackUrl from '@rive-app/webgl2/rive_fallback.wasm?url';
 import { useEffect, useRef, useState } from 'react';
 import { RIVE_SRC, RIVE_STATE_MACHINE } from '../config';
 import type { SceneArtboard } from '../lib/artboard';
@@ -10,11 +8,7 @@ import { greet, isAtGreetStop } from '../lib/greeting';
 import { PHASE_TIME_VALUE, isLampOnPhase, type Phase } from '../lib/phase';
 import { MAX_ADAPT_STEPS, medianFrameMs, nextPixelRatio, renderPixelRatio } from '../lib/renderScale';
 import { INITIAL_WALKER, isSettled, stepWalker, type WalkerState } from '../lib/walker';
-
-// Self-host the runtime (the default would fetch it from unpkg) and start compiling it before mount.
-RuntimeLoader.setWasmUrl(wasmUrl);
-RuntimeLoader.setWasmFallbackUrl(wasmFallbackUrl);
-RuntimeLoader.awaitInstance().catch(() => undefined);
+import './riveRuntime';
 
 /**
  * Long enough for the file's 500 ms phase blends, and for the lamp to finish switching on
@@ -39,6 +33,8 @@ export type RiveSceneProps = {
   readProgress?: () => number;
   /** Where the penguin has actually walked to, in stops, reported on every frame it moves. */
   onWalk?: (shown: number) => void;
+  /** Called once the scene has drawn the right phase and starts to fade in. */
+  onReady?: () => void;
 };
 
 /** Returns false when the view model didn't bind, which makes every write a silent no-op. */
@@ -59,12 +55,13 @@ function fireLamp(rive: Rive, trigger: 'lampOn' | 'lampOff') {
   rive.viewModelInstance?.trigger(trigger)?.trigger();
 }
 
-export function RiveScene({ artboard, phase, paused, onLoadError, readProgress, onWalk }: RiveSceneProps) {
+export function RiveScene({ artboard, phase, paused, onLoadError, readProgress, onWalk, onReady }: RiveSceneProps) {
   const [ready, setReady] = useState(false);
   const phaseRef = useRef(phase);
   const pausedRef = useRef(paused);
   const onLoadErrorRef = useRef(onLoadError);
   const onWalkRef = useRef(onWalk);
+  const onReadyRef = useRef(onReady);
   const appliedPhaseRef = useRef<Phase | null>(null);
   const cancelStartupRef = useRef<() => void>(() => undefined);
   const warnedUnboundRef = useRef(false);
@@ -78,9 +75,14 @@ export function RiveScene({ artboard, phase, paused, onLoadError, readProgress, 
     pausedRef.current = paused;
     onLoadErrorRef.current = onLoadError;
     onWalkRef.current = onWalk;
+    onReadyRef.current = onReady;
   });
 
   useEffect(() => () => cancelStartupRef.current(), []);
+
+  useEffect(() => {
+    if (ready) onReadyRef.current?.();
+  }, [ready]);
 
   const { rive, canvas, RiveComponent } = useRive({
     src: RIVE_SRC,

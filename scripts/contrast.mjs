@@ -12,6 +12,12 @@
  * the glyphs will sit on. Screenshot that box, decode it in a canvas, and take the DARKEST pixel
  * — the worst case for dark ink — then compute the WCAG ratio against --ink.
  *
+ * The stop titles are measured too, each over its own scenery, after the penguin has walked there.
+ *
+ * Emphasised phrases (<mark>) get a row of their own, in their own ink. The pen stroke under them
+ * only meets the descenders, but the row still reports the worse of the ink against the scene and
+ * against the stroke. The stroke is hidden with the glyphs, so the backdrop is the bare scene.
+ *
  *   node scripts/contrast.mjs
  */
 import { mkdir, writeFile } from 'node:fs/promises';
@@ -87,40 +93,50 @@ async function run() {
       const page = await browser.newPage({ viewport: { width: viewport.width, height: viewport.height } });
       await page.goto(`${BASE}/?phase=${phase}`, { waitUntil: 'load' });
       await page.waitForSelector('.scene.is-ready, .page--scene-failed', { timeout: 20_000 });
+      // The loading animation holds the page until its intro has played; measure what it reveals.
+      await page.waitForSelector('.loader', { state: 'detached', timeout: 20_000 });
       await page.waitForTimeout(1600);
 
-      // Read each element's rendered text color before hiding it
-      const colors = {};
-      for (const [label, selector] of [
-        ['title', '.hero__title'],
-        ['subline', '.hero__subline'],
-      ]) {
-        const el = await page.$(selector);
-        if (el) {
-          colors[label] = await el.evaluate((node) => {
-            const raw = window.getComputedStyle(node).color;
-            const match = raw.match(/\d+/g);
-            return match ? match.slice(0, 3).map(Number) : [0x1e, 0x29, 0x3b];
-          });
-        }
-      }
+      // Read each element's rendered text colour before hiding it.
+      const colors = {
+        title: [await page.$eval('.hero__title', (node) => window.getComputedStyle(node).color)],
+        // The painted colours, not the tokens' text: a minifier is free to write #FFFFFF as #fff.
+        mark: await page.$eval('.hero__title mark', (node) => ({
+          ink: window.getComputedStyle(node).color,
+          stroke: window.getComputedStyle(node.querySelector('.blur-text-mark__stroke path')).stroke,
+        })),
+        subline: await page.$eval('.hero__subline', (node) => window.getComputedStyle(node).color),
+      };
+      const parse = (raw) => {
+        const hexMatch = /^#([0-9a-f]{6})$/i.exec(raw);
+        if (hexMatch) return [0, 2, 4].map((i) => parseInt(hexMatch[1].slice(i, i + 2), 16));
+        const match = raw.match(/\d+/g);
+        return match ? match.slice(0, 3).map(Number) : INK;
+      };
+      const inks = {
+        title: colors.title.map(parse),
+        subline: [parse(colors.subline)],
+        mark: [parse(colors.mark.ink)],
+      };
+      const stroke = parse(colors.mark.stroke);
 
-      // Hide the glyph fill, keep the shadow: what remains inside the box IS the backdrop.
-      await page.addStyleTag({ content: '.hero__title,.hero__subline{color:transparent !important}' });
+      // Hide the glyphs, keep the scene: what remains inside the box IS the backdrop.
+      await page.addStyleTag({
+        content:
+          '.hero__title,.hero__subline,.stop__title{color:transparent !important}' +
+          '.blur-text-mark{color:transparent !important}.blur-text-mark__stroke{visibility:hidden !important}',
+      });
       await page.waitForTimeout(200);
 
-      for (const [label, selector] of [
-        ['title', '.hero__title'],
-        ['subline', '.hero__subline'],
-      ]) {
-        const el = await page.$(selector);
-        if (!el) continue;
-        const buffer = await el.screenshot();
+      const measure = async (label, element, kind) => {
+        if (!element) return;
+        const buffer = await element.screenshot();
         const worst = await darkestPixel(decoder, buffer);
-        const textColor = colors[label] ?? INK;
-        const ratio = contrast(textColor, worst);
-        // The headline is >= 24px in every viewport here, so it is "large text" at 3:1.
-        const required = label === 'title' ? 3 : 4.5;
+        const [textColor, ratio] = inks[kind]
+          .map((ink) => [ink, kind === 'mark' ? Math.min(contrast(ink, worst), contrast(ink, stroke)) : contrast(ink, worst)])
+          .sort((a, b) => a[1] - b[1])[0];
+        // The titles are >= 18px semibold in every viewport here, so "large text" at 3:1.
+        const required = kind === 'subline' ? 4.5 : 3;
         rows.push({
           viewport: viewport.name,
           phase,
@@ -131,6 +147,25 @@ async function run() {
           required,
           pass: ratio >= required,
         });
+      };
+
+      await measure('title', await page.$('.hero__title'), 'title');
+      await measure('title mark', await page.$('.hero__title'), 'mark');
+      await measure('subline', await page.$('.hero__subline'), 'subline');
+
+      // Walk to each stop and measure its title over the scenery it actually sits on.
+      const stops = await page.$$('.stop__copy');
+      for (const [index, stop] of stops.entries()) {
+        if (await page.$('.page--scene-failed')) break;
+        await page.keyboard.press('ArrowDown');
+        await page.waitForFunction(
+          (i) => document.querySelectorAll('.stop__copy')[i]?.style.opacity === '1',
+          index,
+          { timeout: 60_000 },
+        );
+        await page.waitForTimeout(600);
+        await measure(`stop ${index + 1}`, await stop.$('.stop__title'), 'title');
+        await measure(`stop ${index + 1} mark`, await stop.$('.stop__title'), 'mark');
       }
       await page.close();
     }

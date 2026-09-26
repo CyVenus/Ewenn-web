@@ -27,7 +27,7 @@ npm run dev          # http://localhost:5173
 | `npm run lint` | ESLint |
 | `npm run screenshots` | 8 viewports × 4 phases against a running preview, with layout assertions |
 | `npm run screenshots:fallback` | Asserts the page still works with WebGL disabled |
-| `npm run contrast` | Measures real hero contrast per phase against WCAG AA |
+| `npm run contrast` | Measures real contrast per phase against WCAG AA: the hero, each stop's title over its own scenery, and the highlighted phrases |
 | `npm run layout` | 22 viewport shapes × 2 pages: overflow, overlap and zoom reflow |
 | `npm run sync:assets` | Copies `assets/` originals to `public/` and `src/assets/` |
 | `npm run check:assets` | Verifies those copies have not drifted |
@@ -93,7 +93,7 @@ src/
 There is **no router**. Each page is its own HTML document with its own entry — a single screen
 plus three text pages does not need one.
 
-`assets/` holds the protected originals (the `.riv` and two SVGs); `public/` and `src/assets/`
+`assets/` holds the protected originals (the two `.riv` files and two SVGs); `public/` and `src/assets/`
 hold copies the app loads by URL or bundles. `npm run check:assets` is what notices if they drift.
 
 ## Things that will bite you
@@ -107,6 +107,10 @@ hold copies the app loads by URL or bundles. `npm run check:assets` is what noti
 - **The Rive canvas must never be the LCP element.** The headline paints first and is the LCP;
   the canvas fades in when it reports ready.
 - **`prefers-reduced-motion` alone governs playback.** There is deliberately no pause button.
+- **The home page opens on a loading animation** (`loading-anim.riv`, the app icon's penguin
+  waving). It holds the page until its 2.5 s intro has played and the scene is ready, capped at
+  8 s, and the page's own entrance waits under it. Its length is a constant in `src/config.ts`
+  that has to follow the file; see the contract. The QA scripts wait for it to leave.
 
 ## Fallbacks
 
@@ -165,3 +169,5 @@ the `.riv`, and falling snow defeats pixel diffing. Click through these by hand:
 - `?phase=` changes the sky, and the lamp is lit for evening and night
 - keyboard focus is visible on every link
 - with reduced motion on, the scene starts paused on the correct phase
+- on load, the icon's penguin peeks up, waves and winks, then the page fades in and the headline
+  blurs into focus; with reduced motion on, the still icon shows and the page follows without a fade

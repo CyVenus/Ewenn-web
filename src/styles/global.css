@@ -127,6 +127,68 @@ html[data-page='doc'] body {
   height: 100%;
 }
 
+/* ---------------------------------------------------------------- loader */
+
+/*
+ * The app icon on plain white while the scene loads (LoadingScreen.tsx) — the same at every hour,
+ * so the only colour on screen is the icon's own. It sits above
+ * everything and catches every tap, so nothing hidden under it can be clicked; it gives the taps
+ * back the moment it starts to fade.
+ */
+.loader {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: grid;
+  place-items: center;
+  background: #fff;
+  transition: opacity 500ms ease;
+}
+
+/* White from the first paint, not only once the loader mounts, so the load never flashes the sky
+   before it. The documents keep their paper. */
+html:not([data-page='doc']) body:not(:has(.page)),
+body:has(.page--loading) {
+  background: #fff;
+}
+
+.loader--leaving {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/*
+ * The header's icon, larger. The artboard is full bleed, and the penguin peeks up out of its
+ * bottom edge, so the rounded tile is what makes that edge read as the icon's rather than an
+ * arbitrary line across the screen. The fill is the artwork's own blue: it is the intro's first
+ * frame, and what shows until the runtime has loaded.
+ */
+.loader__tile {
+  width: clamp(120px, 32vmin, 184px);
+  aspect-ratio: 1;
+  border-radius: 22%;
+  overflow: hidden;
+  background: #74d6ef;
+  box-shadow: 0 14px 40px rgb(16 42 67 / 22%);
+}
+
+.loader__canvas,
+.loader__still {
+  width: 100%;
+  height: 100%;
+}
+
+/*
+ * The page's entrance waits for the loader. The header, the hero and the footer all arrive on CSS
+ * animations that start at mount, which is under the loader, so they would be over before anyone
+ * saw them. Paused, each holds its first keyframe, delay and all, and plays from the start the
+ * moment `page--loading` comes off. The words are still painted at that keyframe's 0.01 opacity,
+ * so the headline remains the page's LCP and is timed at first paint.
+ */
+.page--loading :is(.enter, .hero__subline, .store-badge, .blur-text-word, .blur-text-mark--entrance) {
+  animation-play-state: paused;
+}
+
 /* ---------------------------------------------------------------- HTML layer */
 
 /*
@@ -154,6 +216,13 @@ html[data-page='doc'] body {
 .overlay a,
 .overlay button {
   pointer-events: auto;
+}
+
+/* A copy block HomePage has faded out. It is still there, pinned under the one showing, so its
+   links have to give their taps up too — they opted back in just above. */
+.overlay [data-faded],
+.overlay [data-faded] :is(a, button) {
+  pointer-events: none;
 }
 
 /* ---------------------------------------------------------------- header */
@@ -241,7 +310,8 @@ html[data-page='doc'] body {
   transition: background 400ms ease;
 }
 
-.hero__title {
+.hero__title,
+.stop__title {
   margin: 0;
   font-size: var(--type-display);
   font-weight: var(--weight-semibold);
@@ -372,20 +442,22 @@ html[data-page='doc'] body {
   padding: var(--copy-top) max(20px, env(safe-area-inset-right)) 0 max(20px, env(safe-area-inset-left));
 }
 
-/* Same voice as the hero, one step down: these are chapters of it, not rivals to it. */
+/* The same voice as the hero, at the hero's size: each stop's title shares .hero__title's rule,
+   and its column is as wide. */
 .stop__copy {
-  width: min(720px, 100%);
+  width: min(820px, 100%);
   text-align: center;
 }
 
 .stop__title {
-  margin: 0;
-  font-size: calc(var(--type-display) * 0.78);
-  font-weight: var(--weight-semibold);
-  line-height: 1.1;
-  letter-spacing: -0.01em;
-  color: var(--ink);
   text-wrap: balance;
+}
+
+/* Holds a title's last sentence together (lib/sentences.ts), so a two-sentence title breaks
+   between the sentences rather than wherever balance finds the most even split. inline-block,
+   not nowrap, for the same reason as .hero__title-phrase. */
+.stop__title-phrase {
+  display: inline-block;
 }
 
 .stop__body {
@@ -453,7 +525,7 @@ html[data-page='doc'] body {
 }
 
 .page--walk-copy .stop__copy {
-  width: min(720px, calc(100% - max(20px, env(safe-area-inset-left)) - max(20px, env(safe-area-inset-right))));
+  width: min(820px, calc(100% - max(20px, env(safe-area-inset-left)) - max(20px, env(safe-area-inset-right))));
 }
 
 .page--walk-copy .screen--hero > .screen__pin {
@@ -492,6 +564,14 @@ html[data-page='doc'] body {
 @media (max-width: 767px) {
   .screen--stop {
     --copy-top: calc(max(16px, env(safe-area-inset-top)) + 48px + clamp(20px, 7.5vh, 104px) + 48px);
+  }
+}
+
+/* A small phone (320x568, 360x640) cannot spare the extra 48px: the first stop's copy ran down
+   onto the flag. It keeps a little of the breathing room. */
+@media (max-width: 767px) and (max-height: 700px) and (max-aspect-ratio: 1/1) {
+  .screen--stop {
+    --copy-top: calc(max(16px, env(safe-area-inset-top)) + 48px + clamp(20px, 7.5vh, 104px) + 12px);
   }
 }
 
@@ -1117,31 +1197,119 @@ html[data-page='doc'] body {
   display: inline;
 }
 
-.blur-text-token {
-  display: inline;
-}
-
 .blur-text-word {
   display: inline-block;
   will-change: transform, filter, opacity;
-  animation: blur-text-enter 580ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  animation: blur-text-enter 900ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 
 .blur-text-word--top {
   animation-name: blur-text-enter-top;
 }
 
+/* The stop titles run no animation of their own: HomePage writes each word's blur from the walk
+   (lib/copyReveal.ts), and clears it once the word is sharp. */
+.blur-text-word--scrub {
+  animation: none;
+  will-change: auto;
+}
+
+/* Eased exactly as far behind the walk as the block's opacity is (.page--walk-copy .stop__copy),
+   so the blur and the fade stay in step instead of the fade trailing the blur by 120ms. */
+.page--walk-copy .blur-text-word--scrub {
+  transition: filter 120ms linear, transform 120ms linear;
+}
+
+/* ---------------------------------------------------------------- title emphasis */
+
+/*
+ * The phrases a title leans on (config.ts: headlineMarks, STOPS[].marks) take their own ink — the
+ * deep teal of the scene's pines, indigo at night — over a single curved pen stroke in the white
+ * of the scene's snow (tokens.css: --mark-ink, --mark).
+ * The stroke runs under the baseline and behind the letters, so it never cuts into them; the g
+ * and y just cross it, the way they would on paper.
+ *
+ * --mark-progress is how much of the stroke is drawn. Registered, so it can animate and ease: the
+ * hero's is drawn once after its words have settled; each stop's is written from the walk
+ * (lib/copyReveal.ts, markProgress). Unset, it is 1, so without a scene, or with motion reduced,
+ * the stroke is simply there.
+ */
+@property --mark-progress {
+  syntax: '<number>';
+  inherits: true;
+  initial-value: 1;
+}
+
+.blur-text-mark {
+  /* One box per phrase, so the stroke can run the width of it. The phrases are short enough
+     never to need to wrap inside themselves. */
+  position: relative;
+  display: inline-block;
+  isolation: isolate;
+  /* The UA's own <mark> yellow, gone. */
+  background: none;
+  color: var(--mark-ink);
+  transition: color 400ms ease;
+}
+
+.blur-text-mark__stroke {
+  position: absolute;
+  z-index: -1;
+  left: -0.04em;
+  /* An explicit width: an absolutely positioned <svg> is a replaced element, and left + right
+     alone leave it at its intrinsic size rather than stretching it across the phrase. */
+  width: calc(100% + 0.08em);
+  top: 0.9em;
+  height: 0.3em;
+  overflow: visible;
+  /* Drawn by uncovering it from the left. Not by a sliding dash: with a non-scaling stroke,
+     Chrome measures dash lengths in screen pixels rather than in pathLength units, and the line
+     came out chopped into pieces. The insets reach past the box so the round caps are not cut. */
+  clip-path: inset(-50% calc((1 - var(--mark-progress)) * 105%) -50% -5%);
+  /* A white stroke's edge, on the palest sky: noon is only 1.47:1 against white, and the sun behind
+     the copy is paler still. Tinted with the phrase's own ink so it reads as the stroke's shadow. */
+  filter: drop-shadow(0 1px 1.5px color-mix(in srgb, var(--mark-ink) 40%, transparent));
+}
+
+.blur-text-mark__stroke path {
+  fill: none;
+  stroke: var(--mark);
+  stroke-width: 0.12em;
+  stroke-linecap: round;
+  transition: stroke 400ms ease;
+}
+
+.blur-text-mark--entrance {
+  animation: mark-draw 650ms cubic-bezier(0.65, 0, 0.35, 1) both;
+  /* After the marked words have come into focus; a second stroke follows the first. */
+  animation-delay: calc(1000ms + var(--mark-index, 0) * 450ms);
+}
+
+.page--walk-copy .blur-text-mark--scrub {
+  transition: --mark-progress 120ms linear, color 400ms ease;
+}
+
+@keyframes mark-draw {
+  from {
+    --mark-progress: 0;
+  }
+  to {
+    --mark-progress: 1;
+  }
+}
+
+/*
+ * Two keyframes and no midpoint. The easing curve applies to each interval between keyframes
+ * separately, so a 50% stop made opacity and blur ease to a near-standstill halfway and then set
+ * off again — a hitch in the middle of every word.
+ */
 @keyframes blur-text-enter {
-  0% {
+  from {
     opacity: 0.01;
-    filter: blur(14px);
-    transform: translateY(16px) scale(0.96);
+    filter: blur(10px);
+    transform: translateY(10px) scale(0.98);
   }
-  50% {
-    opacity: 0.85;
-    filter: blur(3px);
-  }
-  100% {
+  to {
     opacity: 1;
     filter: blur(0px);
     transform: translateY(0) scale(1);
@@ -1149,16 +1317,12 @@ html[data-page='doc'] body {
 }
 
 @keyframes blur-text-enter-top {
-  0% {
+  from {
     opacity: 0.01;
-    filter: blur(14px);
-    transform: translateY(-16px) scale(0.96);
+    filter: blur(10px);
+    transform: translateY(-10px) scale(0.98);
   }
-  50% {
-    opacity: 0.85;
-    filter: blur(3px);
-  }
-  100% {
+  to {
     opacity: 1;
     filter: blur(0px);
     transform: translateY(0) scale(1);
@@ -1249,7 +1413,8 @@ html[data-page='doc'] body {
  * lines by breaking the hyphenated phrase apart, which is the wrap the markup exists to prevent.
  */
 @media (max-width: 340px) {
-  .hero__title {
+  .hero__title,
+  .stop__title {
     font-size: clamp(1.5rem, 1rem + 2vw, 2rem);
   }
 
@@ -1294,13 +1459,28 @@ html[data-page='doc'] body {
     height: 34px;
   }
 
-  .hero__title {
+  .hero__title,
+  .stop__title {
     font-size: clamp(1.375rem, 0.9rem + 2.2vw, 2rem);
   }
 
   .hero__subline {
     margin-top: 8px;
     font-size: 0.9375rem;
+  }
+
+  /* The stop copy gets the same compact treatment, and less air above it: on these shapes the
+     scenery starts a third of the way down, and the copy has to end before it does. The body
+     runs wider so it sets in two lines rather than three. */
+  .screen--stop {
+    --copy-top: calc(max(16px, env(safe-area-inset-top)) + 48px + clamp(6px, 2vh, 18px));
+  }
+
+  .stop__body {
+    margin-top: 6px;
+    max-width: 62ch;
+    font-size: 0.9375rem;
+    line-height: 1.4;
   }
 
   .store-badge {
@@ -1316,6 +1496,51 @@ html[data-page='doc'] body {
 
   .site-footer {
     margin-top: 8px;
+  }
+}
+
+/*
+ * Short and wide: a phone on its side, a laptop zoomed to 200% and beyond. The scene is
+ * bottom-anchored here, so each stop's scenery — the flag and the board, the friends' banner —
+ * rises to within 90–130px of the top edge, and a title and two lines of body under the header
+ * ran straight across them. There is no gap in the scenery to aim for, as the hero's corridor
+ * does; the clear sky is the band along the top. So the stop copy moves up into the header's own
+ * row, beside the wordmark (about 123px wide here, plus a gap), and sets tighter.
+ *
+ * Pinned copy only: in flow, the copy only shows before the scene's first frame or when the scene
+ * never loads, and without a scene there is nothing to overlap.
+ */
+@media (max-height: 460px) and (min-aspect-ratio: 1/1) {
+  .page--walk-copy .stop__copy {
+    top: max(12px, env(safe-area-inset-top));
+    left: calc(max(20px, env(safe-area-inset-left)) + 140px);
+    right: max(16px, env(safe-area-inset-right));
+    width: auto;
+    translate: none;
+  }
+
+  .hero__title,
+  .stop__title {
+    font-size: 1.375rem;
+  }
+
+  .stop__body {
+    margin-top: 4px;
+    max-width: none;
+    font-size: 0.875rem;
+    line-height: 1.35;
+  }
+}
+
+/* Narrower still — a laptop at 300% zoom — leaves about 300px beside the wordmark, where a 22px
+   title wraps and the body runs to three lines. One more step down keeps the title to one. */
+@media (max-height: 460px) and (min-aspect-ratio: 1/1) and (max-width: 520px) {
+  .stop__title {
+    font-size: 1.125rem;
+  }
+
+  .stop__body {
+    font-size: 0.8125rem;
   }
 }
 
@@ -1376,7 +1601,8 @@ html[data-page='doc'] body {
     margin-left: 0;
   }
 
-  .hero__title {
+  .hero__title,
+  .stop__title {
     /* Ceiling set by the corridor, not by taste: the phrase is 7.709em, so the content box has
        to be at least that wide or the headline breaks at the hyphen again. */
     font-size: clamp(1.25rem, 0.6rem + 1.6vw, 2.5rem);
@@ -1388,7 +1614,8 @@ html[data-page='doc'] body {
    landscape phones. Everything else on these shapes is already handled by the max-height block
    above, which is why this is now three lines rather than a second compact ruleset. */
 @media (orientation: landscape) and (max-height: 500px) and (min-width: 760px) {
-  .hero__title {
+  .hero__title,
+  .stop__title {
     font-size: 1.375rem;
   }
 }
@@ -1408,7 +1635,13 @@ html[data-page='doc'] body {
     transform: none !important;
   }
 
+  .blur-text-mark {
+    animation: none !important;
+    --mark-progress: 1 !important;
+  }
+
   .scene,
+  .loader,
   body {
     transition: none;
   }

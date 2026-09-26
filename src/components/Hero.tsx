@@ -15,8 +15,9 @@ export function Hero() {
             text={COPY.headline}
             phrase={HEADLINE.phrase}
             phraseClassName="hero__title-phrase"
+            marks={COPY.headlineMarks}
             delay={100}
-            stepDuration={85}
+            stepDuration={140}
           />
         </h1>
         <p className="hero__subline">{COPY.subline}</p>

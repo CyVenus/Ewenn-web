@@ -26,6 +26,8 @@ export const SITE_URL = 'https://ewenn.app';
 export const COPY = {
   name: 'Ewenn',
   headline: 'Your little goal buddy.',
+  /** Phrases of the headline set on a highlighter stroke. Each must appear in it word for word. */
+  headlineMarks: ['goal buddy.'],
   subline: "Set a goal and Ewenn's AI turns it into small daily steps. Take them on with a friend.",
 } as const;
 
@@ -58,11 +60,13 @@ export const STOPS = [
   {
     id: 'goals',
     title: 'Set a goal. Get gentle steps.',
+    marks: ['a goal.', 'gentle steps.'],
     body: 'Tell Ewenn what you want to work on and it suggests small, doable steps. Tick them off one day at a time.',
   },
   {
     id: 'friends',
     title: 'Better with a friend.',
+    marks: ['a friend.'],
     body: 'Take on a challenge together, see how each other is doing, and cheer them on when the day gets hard.',
   },
 ] as const;
@@ -74,3 +78,16 @@ export const MOBILE_ARTBOARD = 'site-mobile';
 
 /** Below this width/height ratio the portrait artboard is the right composition. */
 export const PORTRAIT_MAX_ASPECT = 0.75;
+
+/**
+ * The loading animation: the app icon's penguin peeking up, waving and winking. One artboard,
+ * one state machine with no inputs, and a single one-shot `intro` state that holds its last frame.
+ * Nothing in the file says when the intro has finished, so its length is written down here.
+ */
+export const LOADER_SRC = '/rive/loading-anim.riv';
+export const LOADER_ARTBOARD = 'app_logo';
+export const LOADER_STATE_MACHINE = 'State Machine 1';
+/** `intro` is 120 frames at 60 fps, played at speed 0.8. Re-exported with a new length? Change this. */
+export const LOADER_INTRO_SECONDS = 120 / 60 / 0.8;
+/** The longest the loader holds the page, in visible time, however slow the scene is. */
+export const LOADER_MAX_MS = 8000;

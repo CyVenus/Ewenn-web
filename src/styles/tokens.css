@@ -71,6 +71,16 @@
    *
    * Phase tokens set optimal text color, opacity, text-shadow cushions, and ambient glow.
    */
+  /*
+   * Title emphasis: the phrases a title leans on take their own ink (--mark-ink), the deep teal of
+   * the scene's pines — indigo at night, where teal would sink into the violet sky — over a curved
+   * pen stroke (--mark) in white, the scene's snow and cloud, at every hour. Gold was the old
+   * stroke and matched the sky's luminance almost exactly (1.01:1 by day), so it read by hue alone;
+   * white stands clear of all four skies and leaves the ink 9:1 or better where a descender
+   * crosses it. The ink clears 3:1 (large text) on the sky; scripts/contrast.mjs measures it.
+   */
+  --mark: #FFFFFF;
+  --mark-ink: #0A4F68;
   --hero-title-color: #0c1e36;
   --hero-title-opacity: 1;
   --hero-title-shadow:
@@ -163,6 +173,7 @@
 
 html[data-phase='day'] {
   --sky: #81CBEE;
+  --mark-ink: #0A4F68;
   --hero-title-color: #0c1e36;
   --hero-title-opacity: 1;
   --hero-title-shadow:
@@ -185,6 +196,7 @@ html[data-phase='noon'] {
   /* At noon, the bright yellow sun sits directly behind the copy.
      Ultra-deep midnight obsidian ink with high subline opacity and a soft luminous
      multi-layer halo provides crisp contrast across the sun rim and sky boundary. */
+  --mark-ink: #0A4F68;
   --hero-title-color: #071321;
   --hero-title-opacity: 1;
   --hero-title-shadow:
@@ -207,6 +219,7 @@ html[data-phase='noon'] {
 html[data-phase='evening'] {
   --sky: #F2AD71;
   /* Sunset amber: rich espresso-plum charcoal ink harmonizes with warm dusk illumination. */
+  --mark-ink: #0B4552;
   --hero-title-color: #1a0f24;
   --hero-title-opacity: 1;
   --hero-title-shadow:
@@ -227,6 +240,7 @@ html[data-phase='evening'] {
 html[data-phase='night'] {
   --sky: #867BFB;
   /* Deep violet night: ultra-deep midnight indigo with moonlight-white starlit edge halo. */
+  --mark-ink: #2E1470;
   --hero-title-color: #080718;
   --hero-title-opacity: 1;
   --hero-title-shadow:

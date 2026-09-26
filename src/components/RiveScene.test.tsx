@@ -156,6 +156,28 @@ describe('RiveScene startup', () => {
     expect(fired).toEqual([]);
   });
 
+  it('reports ready once the startup frames have run, and not before', async () => {
+    const { RiveScene } = await import('./RiveScene');
+    const onReady = vi.fn();
+    render(<RiveScene artboard="site-desktop" phase="day" paused={false} onLoadError={vi.fn()} onReady={onReady} />);
+    act(() => capturedOnReady?.(riveInstance));
+    expect(onReady).not.toHaveBeenCalled();
+    act(() => flushFrames(2));
+    expect(onReady).toHaveBeenCalledOnce();
+  });
+
+  it('reports ready on a paused start only after the phase has blended in', async () => {
+    const { RiveScene, PHASE_BLEND_MS } = await import('./RiveScene');
+    const onReady = vi.fn();
+    render(<RiveScene artboard="site-desktop" phase="day" paused onLoadError={vi.fn()} onReady={onReady} />);
+    act(() => capturedOnReady?.(riveInstance));
+    act(() => flushFrames(2));
+    expect(onReady).not.toHaveBeenCalled();
+    act(() => vi.advanceTimersByTime(PHASE_BLEND_MS));
+    act(() => flushFrames(2));
+    expect(onReady).toHaveBeenCalledOnce();
+  });
+
   it('warns once, and does not throw, when the view model fails to bind', async () => {
     bindViewModel = false;
     riveInstance = makeInstance();

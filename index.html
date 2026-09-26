@@ -13,7 +13,9 @@
     <meta property="og:title" content="Ewenn — Your little goal buddy" />
     <meta property="og:description" content="Set a goal and Ewenn's AI turns it into small daily steps. Take them on with a friend." />
     <meta name="twitter:card" content="summary_large_image" />
-    <!-- The scene is the largest asset on the page and nothing else blocks on it, so start it early. -->
+    <!-- The loading animation is first on screen and 8kB, so it goes first. The scene is the largest
+         asset on the page and nothing else blocks on it, so start it early too. -->
+    <link rel="preload" href="/rive/loading-anim.riv" as="fetch" type="application/octet-stream" crossorigin />
     <link rel="preload" href="/rive/ewenn-scene.riv" as="fetch" type="application/octet-stream" crossorigin />
   </head>
   <body>
