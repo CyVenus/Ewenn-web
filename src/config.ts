@@ -1,8 +1,8 @@
 /**
- * Optional numeric App Store ID, e.g. '1234567890'.
- * When set, it activates the Smart App Banner meta tag and routes APP_STORE_URL to the direct app page.
+ * Ewenn's numeric App Store ID. Being set, it activates the Smart App Banner meta tag and routes
+ * APP_STORE_URL to the app's own page.
  */
-export const APP_STORE_ID = '';
+export const APP_STORE_ID = '6804755458';
 
 /**
  * The badge and the `apple-itunes-app` meta tag must never disagree about whether the app is
@@ -12,12 +12,9 @@ export const isLiveAppStoreId = (id: string): boolean => /^\d+$/.test(id);
 
 export const APP_STORE_LIVE = isLiveAppStoreId(APP_STORE_ID);
 
-/**
- * App Store URL opened when the provider badge is clicked.
- * Currently points to the generic App Store link; update to the direct app link once available.
- */
+/** App Store URL opened when the provider badge is clicked: Ewenn's live listing. */
 export const APP_STORE_URL = APP_STORE_ID
-  ? `https://apps.apple.com/app/id${APP_STORE_ID}`
+  ? `https://apps.apple.com/in/app/ewenn/id${APP_STORE_ID}`
   : 'https://apps.apple.com/in/iphone/apps';
 
 /** The public origin. Feeds each page's canonical and og:url, and the absolute share-image URL. */

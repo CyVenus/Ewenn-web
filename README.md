@@ -46,14 +46,16 @@ rules that matter are keyed on `max-height` and aspect ratio rather than width a
 Horizontal scrolling is the one thing never acceptable (WCAG 1.4.10). Scrolling *down* at high
 zoom is expected, and the audit budgets it rather than banning it.
 
-## Before launch — one edit
+## The App Store link
 
 `APP_STORE_ID` / `APP_STORE_URL` in `src/config.ts`:
 
-- The provider badge opens `APP_STORE_URL` (currently defaulting to `https://apps.apple.com/in/iphone/apps`) in a new tab.
-- Once listed, setting a numeric `APP_STORE_ID` automatically routes the link to `apps.apple.com/app/id<ID>` and emits the matching `apple-itunes-app` Smart App Banner in `src/lib/headTags.ts`. Alternatively, `APP_STORE_URL` can be updated directly to your app's custom link.
+- Ewenn is live: `APP_STORE_ID` is `6804755458`, and the provider badge opens
+  `https://apps.apple.com/in/app/ewenn/id6804755458` in a new tab.
+- The same ID emits the matching `apple-itunes-app` Smart App Banner in `src/lib/headTags.ts`.
+  Clearing the ID falls back to the generic `https://apps.apple.com/in/iphone/apps` and drops the banner.
 
-Set it and rebuild. Nothing else changes.
+Change it and rebuild. Nothing else changes.
 
 ## How the day/night cycle works
 
