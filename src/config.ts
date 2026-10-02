@@ -17,6 +17,17 @@ export const APP_STORE_URL = APP_STORE_ID
   ? `https://apps.apple.com/in/app/ewenn/id${APP_STORE_ID}`
   : 'https://apps.apple.com/in/iphone/apps';
 
+/**
+ * App Store Connect campaign links, keyed by the `utm_source` an ad puts on the landing URL. `pt`
+ * is the provider token and `ct` the campaign token, which is what App Analytics groups downloads
+ * by. A visitor with any other source, or none, gets APP_STORE_URL. To add a campaign, paste the
+ * link App Store Connect generates under a new lowercase key.
+ */
+export const APP_STORE_CAMPAIGN_URLS: Readonly<Record<string, string>> = {
+  instagram: 'https://apps.apple.com/app/apple-store/id6804755458?pt=128520012&ct=ig_ad_launch_oct26&mt=8',
+  x: 'https://apps.apple.com/app/apple-store/id6804755458?pt=128520012&ct=x_launch_oct26&mt=8',
+};
+
 /** The public origin. Feeds each page's canonical and og:url, and the absolute share-image URL. */
 export const SITE_URL = 'https://ewenn.app';
 

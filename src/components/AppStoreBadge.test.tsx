@@ -28,9 +28,16 @@ async function renderBadge(options?: { id?: string; url?: string }) {
   return render(<AppStoreBadge />);
 }
 
+/** jsdom has no way to set window.location.search, so each test replaces it wholesale. */
+function setSearch(search: string) {
+  Object.defineProperty(window, 'location', { writable: true, value: { ...window.location, search } });
+}
+
 afterEach(() => {
   store.id = '';
   store.url = '';
+  setSearch('');
+  sessionStorage.clear();
 });
 
 describe('AppStoreBadge', () => {
@@ -77,10 +84,25 @@ describe('AppStoreBadge', () => {
     expect(img.className).toBe('store-badge__img');
   });
 
+  it('links a visitor from the Instagram ad to its campaign link', async () => {
+    setSearch('?utm_source=instagram&utm_medium=paid');
+    await renderBadge({ id: '6804755458' });
+    const link = screen.getByRole('link', { name: 'Download Ewenn on the App Store' });
+    expect(link.getAttribute('href')).toMatch(/[?&]ct=ig_ad_launch_oct26&mt=8$/);
+  });
+
+  it('keeps the campaign link once the visitor comes back without the query', async () => {
+    sessionStorage.setItem('ewenn:utm_source', 'x');
+    await renderBadge({ id: '6804755458' });
+    const link = screen.getByRole('link', { name: 'Download Ewenn on the App Store' });
+    expect(link.getAttribute('href')).toMatch(/[?&]ct=x_launch_oct26&mt=8$/);
+  });
+
   it('falls back to a plain image when APP_STORE_URL is empty', async () => {
     // When URL is explicitly configured as empty
     vi.doMock('../config', async () => ({
       APP_STORE_URL: '',
+      APP_STORE_CAMPAIGN_URLS: {},
     }));
     vi.resetModules();
     const { AppStoreBadge } = await import('./AppStoreBadge');

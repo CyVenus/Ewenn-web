@@ -57,6 +57,13 @@ zoom is expected, and the audit budgets it rather than banning it.
 
 Change it and rebuild. Nothing else changes.
 
+Ads land on `/?utm_source=…`, and the badge swaps in the matching App Store Connect campaign link
+from `APP_STORE_CAMPAIGN_URLS` (`instagram`, `x`) so App Analytics credits the download to the ad.
+The source is kept in `sessionStorage` for the tab, so it survives a trip to the doc pages; any
+other source, or none, gets `APP_STORE_URL`; `src/lib/campaign.ts` does the choosing. A new
+campaign is one more lowercase key in `APP_STORE_CAMPAIGN_URLS`, holding the link App Store
+Connect generates. The Smart App Banner is fixed at build time and is never tagged.
+
 ## How the day/night cycle works
 
 The scene has four phases, chosen from the visitor's **local browser clock** — so time zone and
