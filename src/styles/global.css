@@ -4,9 +4,14 @@
   box-sizing: border-box;
 }
 
+/*
+ * No background on html or body. Safari 26 and later ignore theme-color and paint their top and
+ * bottom bars in whatever colour these two carry, so with the sky here the bars turned blue by
+ * day and purple at night. Left unset, Safari keeps its own neutral glass. The scene canvas
+ * covers the viewport anyway, and the fallback puts the sky on .page--scene-failed instead.
+ */
 html {
   height: 100%;
-  background: var(--sky);
   color-scheme: light;
   -webkit-text-size-adjust: 100%;
   /* For the document pages' section links. Global rather than scoped because it affects only
@@ -37,11 +42,7 @@ body {
   font-size: 1rem;
   line-height: 1.5;
   color: var(--ink);
-  background: var(--sky);
   -webkit-font-smoothing: antialiased;
-  /* Matches the 500ms blend the Rive file uses between phases, so the HTML layer and the
-     canvas change colour together rather than one chasing the other. */
-  transition: background-color 500ms ease;
 }
 
 img {
@@ -143,13 +144,6 @@ html[data-page='doc'] body {
   place-items: center;
   background: #fff;
   transition: opacity 500ms ease;
-}
-
-/* White from the first paint, not only once the loader mounts, so the load never flashes the sky
-   before it. The documents keep their paper. */
-html:not([data-page='doc']) body:not(:has(.page)),
-body:has(.page--loading) {
-  background: #fff;
 }
 
 .loader--leaving {

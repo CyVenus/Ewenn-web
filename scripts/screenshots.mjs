@@ -102,7 +102,6 @@ async function run() {
           phase: document.documentElement.dataset.phase,
           sceneReady: Boolean(document.querySelector('.scene.is-ready')),
           sceneFailed: Boolean(document.querySelector('.page--scene-failed')),
-          themeColor: document.querySelector('meta[name="theme-color"]')?.getAttribute('content'),
           // Height over line-height. NOT getClientRects().length: the h1 is a block, so that
           // returns a single border box however many lines of text are inside it.
           titleLines: title

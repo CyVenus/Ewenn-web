@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { PHASE_SKY, getPhase, parsePhaseOverride, type Phase } from '../lib/phase';
+import { getPhase, parsePhaseOverride, type Phase } from '../lib/phase';
 
 export const PHASE_TICK_MS = 60_000;
 
@@ -23,7 +23,6 @@ export function usePhase(): Phase {
 
   useEffect(() => {
     document.documentElement.dataset.phase = phase;
-    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', PHASE_SKY[phase]);
   }, [phase]);
 
   return phase;

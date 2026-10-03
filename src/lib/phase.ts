@@ -16,13 +16,6 @@ export const PHASE_SCHEDULE: PhaseSchedule = schedule;
 
 export const PHASE_TIME_VALUE: Record<Phase, number> = { night: 0, day: 1, noon: 2, evening: 3 };
 
-export const PHASE_SKY: Record<Phase, string> = {
-  day: '#81CBEE',
-  noon: '#9BDEFE',
-  evening: '#F2AD71',
-  night: '#867BFB',
-};
-
 /** Local browser time, so the visitor's time zone and daylight saving apply automatically. */
 export function getPhase(date: Date, activeSchedule: PhaseSchedule = PHASE_SCHEDULE): Phase {
   const hour = date.getHours() + date.getMinutes() / 60;

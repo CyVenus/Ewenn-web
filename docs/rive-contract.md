@@ -98,8 +98,8 @@ end at ~77%; on iPad portrait, ~66% and ~86%. Plain snow fills from ~80% down, w
 ## Phase colours
 
 Sky base fill per phase: day `#81CBEE`, noon `#9BDEFE`, evening `#F2AD71`, night `#867BFB`.
-Mirrored in `src/lib/phase.ts` as `PHASE_SKY`, which also feeds `<meta name="theme-color">` and
-the static fallback sky.
+Mirrored in `src/styles/tokens.css` as `--sky`, which paints the static fallback sky. It is kept
+off `html` and `body` and there is no `<meta name="theme-color">`, so Safari's bars stay neutral.
 
 Only the sky, the sun and the moon change with the phase. **The ground art has no night variant**,
 so night is where header and footer legibility is tightest — `npm run contrast` measures it.

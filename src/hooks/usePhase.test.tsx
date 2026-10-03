@@ -1,6 +1,5 @@
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { PHASE_SKY } from '../lib/phase';
 import { PHASE_TICK_MS, usePhase } from './usePhase';
 
 /** jsdom has no way to set window.location.search, so each test replaces it wholesale. */
@@ -15,7 +14,6 @@ beforeEach(() => {
   vi.useFakeTimers();
   setSearch('');
   document.documentElement.removeAttribute('data-phase');
-  document.head.innerHTML = '<meta name="theme-color" content="#000000" />';
 });
 
 afterEach(() => {
@@ -60,12 +58,6 @@ describe('usePhase', () => {
     atHour(8);
     renderHook(() => usePhase());
     expect(document.documentElement.dataset.phase).toBe('day');
-  });
-
-  it('mirrors the sky into theme-color', () => {
-    atHour(8);
-    renderHook(() => usePhase());
-    expect(document.querySelector('meta[name="theme-color"]')).toHaveAttribute('content', PHASE_SKY.day);
   });
 
   describe('?phase override', () => {

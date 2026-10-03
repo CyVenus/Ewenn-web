@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 import {
   PHASES,
   PHASE_SCHEDULE,
-  PHASE_SKY,
   PHASE_TIME_VALUE,
   getPhase,
   isLampOnPhase,
@@ -54,14 +53,6 @@ describe('PHASE_TIME_VALUE', () => {
   it('is the index of the phase in PHASES, so the two can never disagree', () => {
     for (const [phase, value] of Object.entries(PHASE_TIME_VALUE)) {
       expect(PHASES[value]).toBe(phase);
-    }
-  });
-});
-
-describe('PHASE_SKY', () => {
-  it('gives every phase a sky colour, since it also feeds theme-color', () => {
-    for (const phase of PHASES) {
-      expect(PHASE_SKY[phase]).toMatch(/^#[0-9A-F]{6}$/i);
     }
   });
 });
