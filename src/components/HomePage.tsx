@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { STOPS } from '../config';
+import { useCopyFit } from '../hooks/useCopyFit';
 import { usePhase } from '../hooks/usePhase';
 import { useReducedMotion } from '../hooks/useReducedMotion';
 import { useStopScroll } from '../hooks/useStopScroll';
@@ -26,6 +27,7 @@ function readProgress(): number {
 
 export function HomePage() {
   useZoomLock();
+  const pageRef = useRef<HTMLDivElement>(null);
   /** Copy blocks in screen order: the hero, then one per stop. Filled by the callback refs below. */
   const copyRefs = useRef<(HTMLElement | null)[]>([]);
   /** Each block's scrubbed title words and highlighter strokes, same indexing as copyRefs. Found
@@ -47,6 +49,8 @@ export function HomePage() {
   // to wait for.
   const [loading, setLoading] = useState(webGL2Available);
   const onLift = useCallback(() => setLoading(false), []);
+  // Each screen's copy placed on sky, clear of the scenery that screen stops at.
+  useCopyFit(pageRef, artboard, sceneFailed);
 
   /*
    * Fade each block by where the penguin is, not by where the page has scrolled to. The scroll
@@ -94,6 +98,7 @@ export function HomePage() {
 
   return (
     <div
+      ref={pageRef}
       className={`page page--home${sceneFailed ? ' page--scene-failed' : ''}${
         walkDriven && !sceneFailed ? ' page--walk-copy' : ''
       }${loading ? ' page--loading' : ''}`}

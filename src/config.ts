@@ -84,8 +84,17 @@ export const RIVE_STATE_MACHINE = 'State Machine 1';
 export const DESKTOP_ARTBOARD = 'site-desktop';
 export const MOBILE_ARTBOARD = 'site-mobile';
 
-/** Below this width/height ratio the portrait artboard is the right composition. */
-export const PORTRAIT_MAX_ASPECT = 0.75;
+/**
+ * Below this width/height ratio the portrait artboard is the right composition.
+ *
+ * Each artboard cover-fits a fixed picture (lib/sceneGeometry.ts), so the question is what each
+ * one crops. The desktop picture is 1.86:1, and on a portrait iPad it keeps only its middle: the
+ * hero is a penguin on empty snow and the board and the friends are cut off at the edges. The
+ * portrait picture holds everything up to about 0.84:1, where the walker's feet start to reach the
+ * footer. 0.82 puts every iPad in portrait on the portrait world — 768x954 and 810x1010 in Safari
+ * are 0.80 — and leaves the margin under the walker's feet at a comfortable 100 design units.
+ */
+export const PORTRAIT_MAX_ASPECT = 0.82;
 
 /**
  * The loading animation: the app icon's penguin peeking up, waving and winking. One artboard,

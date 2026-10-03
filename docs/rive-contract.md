@@ -12,14 +12,16 @@ which is the failure mode every rule below exists to prevent.
 - **Runtime:** `@rive-app/react-webgl2`. The Rive Renderer is **required**, not a preference: the
   near snowflakes are feathered and the snowfall is drawn by an embedded Luau script. The
   `react-canvas`, `canvas-lite` and `webgl` runtimes either drop the effect or cannot run the file.
-- Re-exporting? Run `npm run sync:assets`, then `npm run screenshots`.
+- Re-exporting? Run `npm run sync:assets`, then `npm run skyline` against a preview (the copy is
+  placed by it — see [Safe zones](#safe-zones-for-the-html-layer)), then `npm test`,
+  `npm run screenshots` and `npm run scenery`.
 
 ## Artboards
 
 | Artboard | Used when | Design size |
 |---|---|---|
-| `site-desktop` | `innerWidth / innerHeight >= 0.75` | 2243 × 1205 |
-| `site-mobile` | `innerWidth / innerHeight < 0.75` | 1080 × 2340 |
+| `site-desktop` | `innerWidth / innerHeight >= 0.82` | 2243 × 1205 |
+| `site-mobile` | `innerWidth / innerHeight < 0.82` | 1080 × 2340 |
 
 Both use state machine **`State Machine 1`** and bind view model **`PenguinControls`**, instance
 **`Default`** — so the runtime is given `autoBind: true`.
@@ -75,8 +77,8 @@ The site contributes no click handling whatsoever. There is not one pointer even
 
 **This is why `.overlay` is `pointer-events: none`,** with `auto` restored only on its own links
 and the footer pill. The trap that creates is worth stating: anything added to the HTML layer that
-covers the lamp or a tree leaves them *clickable while invisible*. The landscape corridor in
-`global.css` exists partly for that reason.
+covers the lamp or a tree leaves them *clickable while invisible*. Placing the copy on sky (below)
+keeps it off them as well.
 
 ### Known defect
 
@@ -85,15 +87,35 @@ fixed in the editor. Do not work around it in site code — it is a hit-area pro
 
 ## Safe zones for the HTML layer
 
-**`site-desktop`** at roughly 16:9 — the penguin is horizontally centred (47–56% of the width);
-its head starts at ~58% of the viewport height and its feet end at ~75%. The sun is top-left by
-day, top-centre at noon and on the right in the evening; the moon is top-left at night. On aspect
-ratios ≥ 2:1 or heights ≤ 500 px the bottom-anchored scene raises the penguin to 45–51%, which is
-what the landscape corridor in `global.css` is for.
+Neither artboard reflows its world. Each draws **one fixed picture, cover-fitted to the canvas**:
+scaled by `max(canvasWidth / designWidth, canvasHeight / designHeight)` and cropped. That was
+measured, not read off the editor — the penguin's size and position across a dozen viewports fit
+these two rules to the pixel — and `layoutScaleFactor` changes neither.
 
-**`site-mobile`** (portrait) — sun and moon top-right (5–10% of the height), leaving the header
-clear on the left. Tree tops reach ~48%. On phones the penguin's head starts at ~59% and its feet
-end at ~77%; on iPad portrait, ~66% and ~86%. Plain snow fills from ~80% down, where the footer sits.
+| Artboard | Cropped | Anchored |
+|---|---|---|
+| `site-desktop` | the sides on a window narrower than 1.86:1, the **top** on a wider one | bottom edge |
+| `site-mobile` | the sides on a phone narrower than 0.46:1, top and bottom on a squatter one | centre |
+
+So the scenery does not have fixed safe zones in viewport terms; it moves with the window's shape.
+On a 16:10 laptop the friends banner starts 31% of the way down, on a 2:1 laptop window with the
+dock showing it starts at 22%, and on a 21:9 monitor it is at the top edge. A layout keyed on the
+width or the height alone walks the copy straight into it, which is how it once did.
+
+What the site relies on instead is **`src/scene-skyline.json`**: the top of the scenery on each
+screen, in 16-unit columns across each picture. `npm run skyline` measures it from a render at each
+artboard's design size (the one viewport where a CSS pixel is a design unit), counting as scenery
+every pixel that is the same by day and by night — see the next section for why that works.
+`src/lib/sceneGeometry.ts` maps it onto the window, and `src/lib/copyFit.ts` places each screen's
+copy on the sky above it: under the header as designed, else level with the wordmark, else in a
+side column, and only then smaller. **Re-export the .riv and the skyline has to be measured
+again**, or the copy is placed against scenery that is no longer there. `npm run scenery` checks the
+real render against the copy at 46 window shapes, and fails if a line of copy is on a prop.
+
+The artboard threshold, 0.82, is where each crop stops working. On a portrait iPad the desktop
+picture keeps only its middle — the penguin on empty snow, the board and the friends cut off at the
+edges — while the portrait picture holds everything up to about 0.84:1, where the walker's feet
+reach the footer. Every iPad in portrait, Safari's toolbars included, is under 0.82.
 
 ## Phase colours
 

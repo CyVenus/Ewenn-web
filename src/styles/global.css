@@ -189,8 +189,8 @@ html[data-page='doc'] body {
  * pointer-events: none is what lets the penguin, the lamp and the trees stay tappable — the
  * runtime owns pointer input on the canvas underneath. Only this layer's own links opt back in.
  * The trap it creates is that anything here stays *invisible and still clickable-through*, so
- * a stray full-width box silently steals nothing but also blocks nothing — see the landscape
- * block at the bottom for the one place that bites.
+ * a stray full-width box silently steals nothing but also blocks nothing. The copy is kept on
+ * sky (lib/copyFit.ts), which also keeps it off the lamp and the trees.
  */
 .overlay {
   position: relative;
@@ -259,10 +259,10 @@ html[data-page='doc'] body {
   padding-top: clamp(20px, 7.5vh, 104px);
 }
 
-/* Wide enough for the headline to set on one line: it needs ~723px of run at the 56px cap,
-   and 560px — the old value — is precisely what was forcing the two-line wrap. */
+/* The column is the screen's (--copy-w, below): wide enough for the headline to set on one line,
+   which needs ~723px of run at the 56px cap. */
 .hero {
-  width: min(820px, 100%);
+  width: 100%;
 }
 
 /*
@@ -304,10 +304,15 @@ html[data-page='doc'] body {
   transition: background 400ms ease;
 }
 
+/*
+ * Every size in the copy is its designed size times --copy-fit, which useCopyFit sets below 1 only
+ * when the scenery leaves no room for the full size anywhere (lib/copyFit.ts). Each has a floor,
+ * so a small screen stops shrinking before the type does.
+ */
 .hero__title,
 .stop__title {
   margin: 0;
-  font-size: var(--type-display);
+  font-size: max(1.125rem, calc(var(--title-size, var(--type-display)) * var(--copy-fit, 1)));
   font-weight: var(--weight-semibold);
   line-height: 1.08;
   letter-spacing: -0.01em;
@@ -329,11 +334,11 @@ html[data-page='doc'] body {
 }
 
 .hero__subline {
-  margin: 14px auto 0;
+  margin: calc(14px * var(--copy-fit, 1)) auto 0;
   /* Held to roughly 89% of the headline's width so it reads as a second line of the same
      block rather than a paragraph that happens to sit under it. */
   max-width: 48ch;
-  font-size: var(--type-body);
+  font-size: var(--body-size);
   font-weight: var(--weight-medium);
   line-height: 1.45;
   color: var(--hero-subline-color);
@@ -349,12 +354,16 @@ html[data-page='doc'] body {
  * with clear space padding of at least ¼ of the badge height (17px).
  * Clear space has to belong to the thing being clicked. No background, border or shadow:
  * the artwork may not be altered or framed, and it already carries its own black lockup.
+ *
+ * It scales with the rest of the copy, never below 40px — Apple's floor, and the one dimension
+ * here that is not ours to tune — and its clear space stays a quarter of whatever height it has.
  */
 .store-badge {
+  --badge-size: max(40px, calc(var(--badge-h, 68px) * var(--copy-fit, 1)));
   display: inline-block;
   cursor: pointer;
-  margin: 15px 0 -17px;
-  padding: 17px;
+  margin: calc(15px * var(--copy-fit, 1)) 0 calc(var(--badge-size) / -4);
+  padding: calc(var(--badge-size) / 4);
   border-radius: 20px;
   line-height: 0;
   text-decoration: none;
@@ -363,7 +372,7 @@ html[data-page='doc'] body {
 }
 
 .store-badge__img {
-  height: 68px;
+  height: var(--badge-size);
   width: auto;
   display: block;
   cursor: pointer;
@@ -423,24 +432,65 @@ html[data-page='doc'] body {
   padding-top: 0;
 }
 
+/*
+ * Where each screen's copy sits, as four properties on the screen. The values here are the design:
+ * centred, one step below the header, 820px at most. useCopyFit replaces them per screen with a
+ * placement that clears the scenery (lib/copyFit.ts), so these are also what it measures from —
+ * the in-flow block and the pinned one both read the same four, and can never disagree.
+ *
+ *   --copy-top    how far down the block starts
+ *   --copy-left   where its left edge is, from the viewport's
+ *   --copy-w      how wide it is
+ *   --copy-fit    the type scale, 1 being the sizes below
+ *
+ * `100%` inside them resolves where they are used, which is against the viewport in both cases:
+ * the pinned block is fixed, and the in-flow one sits in a screen with no side padding.
+ */
 .screen {
-  /* Header inset + the 48px brand row + the gap the hero always had above it. Named because the
-     pinned copy below has to land on exactly this line: if the two ever disagree, the words jump
-     the moment the scene takes the fade over. */
+  --gutter-left: max(20px, env(safe-area-inset-left));
+  --gutter-right: max(20px, env(safe-area-inset-right));
+  /* Header inset + the 48px brand row + the gap the hero always had above it. */
   --copy-top: calc(max(16px, env(safe-area-inset-top)) + 48px + clamp(20px, 7.5vh, 104px));
+  --copy-w: min(820px, calc(100% - var(--gutter-left) - var(--gutter-right)));
+  --copy-left: calc(var(--gutter-left) + (100% - var(--gutter-left) - var(--gutter-right) - var(--copy-w)) / 2);
+  --body-size: max(0.8125rem, calc(var(--type-body) * (0.45 + 0.55 * var(--copy-fit, 1))));
   height: 100vh;
   height: 100svh;
   display: grid;
-  justify-items: center;
+  justify-items: start;
   align-content: start;
-  padding: var(--copy-top) max(20px, env(safe-area-inset-right)) 0 max(20px, env(safe-area-inset-left));
+  padding-top: var(--copy-top);
+}
+
+/* Positioned in flow as well as pinned, so useCopyFit can measure the lines inside by their
+   offsets from it. */
+.screen > .screen__pin,
+.stop__copy {
+  position: relative;
+  width: var(--copy-w);
+  margin-left: var(--copy-left);
 }
 
 /* The same voice as the hero, at the hero's size: each stop's title shares .hero__title's rule,
    and its column is as wide. */
 .stop__copy {
-  width: min(820px, 100%);
   text-align: center;
+}
+
+/* A side column (lib/copyFit.ts) reads down its own left edge rather than about a centre line it
+   does not have. */
+.screen:is([data-copy-mode='left'], [data-copy-mode='right']) :is(.hero__card, .stop__copy) {
+  text-align: start;
+}
+
+.screen:is([data-copy-mode='left'], [data-copy-mode='right']) :is(.hero__subline, .stop__body) {
+  margin-left: 0;
+}
+
+/* In the header's row the band is short and wide, so the paragraph runs longer lines and fewer of
+   them. */
+.screen[data-copy-mode='beside'] :is(.hero__subline, .stop__body) {
+  max-width: 64ch;
 }
 
 .stop__title {
@@ -455,9 +505,11 @@ html[data-page='doc'] body {
 }
 
 .stop__body {
-  margin: 14px auto 0;
+  margin: calc(14px * var(--copy-fit, 1)) auto 0;
   max-width: 46ch;
-  font-size: var(--type-body);
+  /* The body gives up less than the title as the copy shrinks: it is the part that has to stay
+     readable, and the hierarchy survives a title that loses more. */
+  font-size: var(--body-size);
   line-height: 1.45;
   color: var(--ink);
   text-wrap: pretty;
@@ -506,26 +558,14 @@ html[data-page='doc'] body {
 .page--walk-copy .stop__copy,
 .page--walk-copy .screen--hero > .screen__pin {
   position: fixed;
+  /* The screen's placement, the same four properties the in-flow block reads, so the words land
+     on the line they were on when the scene takes the fade over. */
   top: var(--copy-top);
-  /* Centred from the middle rather than held by both edges: a fixed box resolves percentages
-     against the viewport, not against the inset it was given, so `width: …100%` with left and
-     right set overflows the gutters by exactly the gutters. `translate` and not `transform`,
-     which the hero's entrance animation already owns. */
-  left: 50%;
-  translate: -50% 0;
+  left: var(--copy-left);
+  margin-left: 0;
   /* Keeps it from snapping between the frames of a slow walk, and from flashing when the scene
      hands the fade over on its first frame. */
   transition: opacity 120ms linear;
-}
-
-.page--walk-copy .stop__copy {
-  width: min(820px, calc(100% - max(20px, env(safe-area-inset-left)) - max(20px, env(safe-area-inset-right))));
-}
-
-.page--walk-copy .screen--hero > .screen__pin {
-  display: grid;
-  justify-items: center;
-  width: min(820px, calc(100% - max(20px, env(safe-area-inset-left)) - max(20px, env(safe-area-inset-right))));
 }
 
 @keyframes copy-arrive {
@@ -766,7 +806,7 @@ html[data-page='doc'] body {
 
 /*
  * Short viewports, which on a document page means zoom far more often than it means a phone on
- * its side — see the note above the hero's own short-viewport block. A 60px bar is a fourteenth
+ * its side — see the short-viewport block further down. A 60px bar is a fourteenth
  * of a laptop window and a third of the 180px one that 500% zoom produces, so it shrinks first
  * and then stops sticking altogether: below 420px, the height it would hold is worth more to the
  * reader than the shortcut home, which is still one scroll-to-top away.
@@ -1345,16 +1385,14 @@ html[data-page='doc'] body {
   }
 }
 
+/* A phone's badge runs a little larger: 220px across, which is where Apple's own pages set it. */
 @media (max-width: 478px) {
-  .store-badge {
-    margin: 14px 0 -18px;
-    padding: 18px;
+  .screen--hero {
+    --badge-h: 73px;
   }
 
   .store-badge__img {
-    width: 220px;
     max-width: 100%;
-    height: auto;
   }
 }
 
@@ -1407,9 +1445,8 @@ html[data-page='doc'] body {
  * lines by breaking the hyphenated phrase apart, which is the wrap the markup exists to prevent.
  */
 @media (max-width: 340px) {
-  .hero__title,
-  .stop__title {
-    font-size: clamp(1.5rem, 1rem + 2vw, 2rem);
+  .screen {
+    --title-size: clamp(1.5rem, 1rem + 2vw, 2rem);
   }
 
   .page--home .site-footer {
@@ -1429,112 +1466,19 @@ html[data-page='doc'] body {
  * Short viewports — and that means ZOOM as much as it means a phone on its side.
  *
  * Browser zoom does not have a mode of its own: at 300% a 1500×900 window gives the page a
- * 500×300 CSS viewport, so the height shrinks by the same factor as the width. Width-only
- * responsive rules therefore miss zoom entirely, and the hero is a fixed stack of four things —
- * heading, subline, badge, and the padding above them — that simply does not fit in 300px.
- * Everything here shrinks that stack rather than letting it push the badge and footer out of
- * view, which is what a zoomed-in visitor was getting.
+ * 500×300 CSS viewport, so the height shrinks by the same factor as the width. Width-only rules
+ * miss it entirely. The copy needs nothing here any more — useCopyFit sizes and places it from
+ * the room the scenery actually leaves (lib/copyFit.ts), which is the question these breakpoints
+ * were only ever approximating — but the wordmark does: it is the one fixed thing in the band the
+ * copy has to share.
  *
- * This sits BEFORE the corridor block on purpose: where both apply, the corridor's own sizing
- * is the more specific answer and should win.
- *
- * The aspect clause is what keeps small PHONES out of it. A 320×568 phone is short in absolute
- * terms but tall for its width, and it has room for the full-size hero; compacting it there made
- * a real device worse to fix a zoom case. So: short and wider-than-tall (zoom, and phones on
- * their side), or short in absolute terms whatever the shape.
+ * The aspect clause keeps small PHONES out of it. A 320×568 phone is short in absolute terms but
+ * tall for its width, and has room for the full-size mark.
  */
 @media (max-height: 620px) and (min-aspect-ratio: 1/1), (max-height: 460px) {
-  .overlay__main {
-    padding-top: clamp(6px, 2vh, 18px);
-  }
-
   .brand__icon {
     width: 34px;
     height: 34px;
-  }
-
-  .hero__title,
-  .stop__title {
-    font-size: clamp(1.375rem, 0.9rem + 2.2vw, 2rem);
-  }
-
-  .hero__subline {
-    margin-top: 8px;
-    font-size: 0.9375rem;
-  }
-
-  /* The stop copy gets the same compact treatment, and less air above it: on these shapes the
-     scenery starts a third of the way down, and the copy has to end before it does. The body
-     runs wider so it sets in two lines rather than three. */
-  .screen--stop {
-    --copy-top: calc(max(16px, env(safe-area-inset-top)) + 48px + clamp(6px, 2vh, 18px));
-  }
-
-  .stop__body {
-    margin-top: 6px;
-    max-width: 62ch;
-    font-size: 0.9375rem;
-    line-height: 1.4;
-  }
-
-  .store-badge {
-    margin: 10px 0 0;
-    padding: 10px;
-  }
-
-  .store-badge__img {
-    /* Apple's floor is 40px. This is the one dimension here that is not ours to tune. */
-    height: 40px;
-    width: auto;
-  }
-
-  .site-footer {
-    margin-top: 8px;
-  }
-}
-
-/*
- * Short and wide: a phone on its side, a laptop zoomed to 200% and beyond. The scene is
- * bottom-anchored here, so each stop's scenery — the flag and the board, the friends' banner —
- * rises to within 90–130px of the top edge, and a title and two lines of body under the header
- * ran straight across them. There is no gap in the scenery to aim for, as the hero's corridor
- * does; the clear sky is the band along the top. So the stop copy moves up into the header's own
- * row, beside the wordmark (about 123px wide here, plus a gap), and sets tighter.
- *
- * Pinned copy only: in flow, the copy only shows before the scene's first frame or when the scene
- * never loads, and without a scene there is nothing to overlap.
- */
-@media (max-height: 460px) and (min-aspect-ratio: 1/1) {
-  .page--walk-copy .stop__copy {
-    top: max(12px, env(safe-area-inset-top));
-    left: calc(max(20px, env(safe-area-inset-left)) + 140px);
-    right: max(16px, env(safe-area-inset-right));
-    width: auto;
-    translate: none;
-  }
-
-  .hero__title,
-  .stop__title {
-    font-size: 1.375rem;
-  }
-
-  .stop__body {
-    margin-top: 4px;
-    max-width: none;
-    font-size: 0.875rem;
-    line-height: 1.35;
-  }
-}
-
-/* Narrower still — a laptop at 300% zoom — leaves about 300px beside the wordmark, where a 22px
-   title wraps and the body runs to three lines. One more step down keeps the title to one. */
-@media (max-height: 460px) and (min-aspect-ratio: 1/1) and (max-width: 520px) {
-  .stop__title {
-    font-size: 1.125rem;
-  }
-
-  .stop__body {
-    font-size: 0.8125rem;
   }
 }
 
@@ -1549,68 +1493,6 @@ html[data-page='doc'] body {
   .page--home .site-footer {
     position: static;
     margin: 12px auto max(12px, env(safe-area-inset-bottom));
-  }
-}
-
-/*
- * Phones on their side and ultrawide screens. The scene is bottom-anchored on these shapes,
- * which raises the penguin to 45–51% of the height and crowds the sun, the pine cluster and the
- * streetlamp into the left fifth. A centred hero lands on the penguin's head, and a hero at the
- * far left lands on the lamp — and because .overlay is pointer-events: none, an overlapping
- * block leaves the lamp and trees *clickable while invisible*, which is the worst of both.
- * 21vw is the corridor between the scenery and the penguin.
- *
- * Both triggers are narrower than they were, and both for the same reason: the corridor is a
- * COST, not a free win. It spends 21vw on padding and leaves the copy about 24vw to live in, so
- * it should only run where the penguin actually needs dodging.
- *
- * `max-height` is 500px, matching the contract's own figure for when the bottom-anchored scene
- * raises the penguin to 45–51%. It was 600px, which caught a 1440×900 laptop at 150% zoom —
- * a 960×600 viewport where the penguin is still down at 58% — and squeezed the headline into a
- * 230px column for nothing. Centred fits there with room to spare.
- *
- * `min-width` is the half that was missing entirely. Zoomed in, the viewport is short AND narrow,
- * so 24vw collapsed to about 115px and set a four-word headline in five lines against the left
- * edge. Below this width there is no corridor to aim for, so the copy stays centred.
- */
-@media (orientation: landscape) and (max-height: 500px) and (min-width: 760px),
-  (min-aspect-ratio: 2/1) and (min-width: 760px) {
-  .overlay__main {
-    justify-items: start;
-    align-content: center;
-    padding-top: 0;
-    padding-left: 21vw;
-  }
-
-  .hero {
-    /* 21% + 24vw stays clear of the penguin at every width in this range. */
-    width: min(560px, 24vw);
-  }
-
-  .hero__card {
-    text-align: left;
-  }
-
-  .hero__subline {
-    margin-left: 0;
-  }
-
-  .hero__title,
-  .stop__title {
-    /* Ceiling set by the corridor, not by taste: the phrase is 7.709em, so the content box has
-       to be at least that wide or the headline breaks at the hyphen again. */
-    font-size: clamp(1.25rem, 0.6rem + 1.6vw, 2.5rem);
-  }
-}
-
-/* Short landscape phones: a compact block keeps the footer on screen. */
-/* The corridor is narrow, so its headline needs to come down further still on the shortest
-   landscape phones. Everything else on these shapes is already handled by the max-height block
-   above, which is why this is now three lines rather than a second compact ruleset. */
-@media (orientation: landscape) and (max-height: 500px) and (min-width: 760px) {
-  .hero__title,
-  .stop__title {
-    font-size: 1.375rem;
   }
 }
 

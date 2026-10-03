@@ -10,7 +10,7 @@
  * Checks, per shape:
  *   overflowX   horizontal scrolling — a WCAG 1.4.10 reflow failure, never acceptable
  *   overflowY   content taller than the viewport, measured so it can be judged, not banned
- *   overlap     header/hero/footer boxes intersecting each other
+ *   overlap     the header's mark, the hero and the footer intersecting each other
  *   offscreen   any hero element whose box leaves the viewport
  *   titleLines  how the headline wrapped
  *
@@ -88,7 +88,9 @@ for (const pageDef of PAGES) {
       return { top: r.top, left: r.left, right: r.right, bottom: r.bottom, w: r.width, h: r.height };
     };
     const doc = document.documentElement;
-    const header = box('.site-header');
+    // The mark, not the header bar: the bar is the full width of the window and mostly empty, and
+    // a short, wide window sets the copy in that row beside the mark (src/lib/copyFit.ts).
+    const header = box('.brand');
     const title = box('.hero__title');
     const subline = box('.hero__subline');
     const badge = box('.store-badge');

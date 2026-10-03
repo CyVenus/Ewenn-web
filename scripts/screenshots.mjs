@@ -23,21 +23,24 @@ const HEADED = process.env.HEADED === '1';
 
 /**
  * `titleLines` is the headline's expected line count at that shape, and it is an assertion, not
- * a note: the reference design sets "Your new self-care partner." on one line, and the two
- * places it legitimately wraps are a portrait phone and the narrow landscape corridor. Encoding
- * it per viewport rather than deriving it from the width keeps the corridor's own rules honest.
+ * a note. "Your little goal buddy." is short enough to set on one line everywhere in this matrix,
+ * a portrait phone included; a second line would mean the column or the type scale went wrong.
  */
 const VIEWPORTS = [
   { name: 'desktop-1440x900', width: 1440, height: 900, titleLines: 1 },
   { name: 'desktop-1920x1080', width: 1920, height: 1080, titleLines: 1 },
   { name: 'ultrawide-2560x1080', width: 2560, height: 1080, titleLines: 1 },
-  { name: 'phone-390x844', width: 390, height: 844, titleLines: 2 },
-  { name: 'phone-landscape-844x390', width: 844, height: 390, titleLines: 2 },
+  { name: 'phone-390x844', width: 390, height: 844, titleLines: 1 },
+  { name: 'phone-landscape-844x390', width: 844, height: 390, titleLines: 1 },
   { name: 'tablet-820x1180', width: 820, height: 1180, titleLines: 1 },
-  // Short-but-wide laptop shapes, either side of the corridor threshold. These are the shapes
-  // that catch a regression in that media query.
+  // An iPad in Safari, on the portrait artboard since the threshold moved to 0.82.
+  { name: 'tablet-safari-810x1010', width: 810, height: 1010, titleLines: 1 },
+  // Short-but-wide laptop windows: the shapes where the scenery climbs into the copy's band, and
+  // useCopyFit moves it (src/lib/copyFit.ts). 1454x690 is the MacBook-with-dock shape it was
+  // reported on.
   { name: 'laptop-1280x694', width: 1280, height: 694, titleLines: 1 },
   { name: 'laptop-1366x768', width: 1366, height: 768, titleLines: 1 },
+  { name: 'laptop-1454x690', width: 1454, height: 690, titleLines: 1 },
 ];
 
 const PHASES = ['night', 'day', 'noon', 'evening'];

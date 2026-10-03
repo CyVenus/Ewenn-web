@@ -17,6 +17,8 @@
     "contrast": "node scripts/contrast.mjs",
     "layout": "node scripts/layout-audit.mjs",
     "zoom": "node scripts/zoom-audit.mjs",
+    "scenery": "node scripts/scenery-audit.mjs",
+    "skyline": "node scripts/skyline.mjs",
     "sync:assets": "node scripts/sync-assets.mjs",
     "check:assets": "node scripts/sync-assets.mjs --check"
   },

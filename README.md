@@ -29,10 +29,12 @@ npm run dev          # http://localhost:5173
 | `npm run screenshots:fallback` | Asserts the page still works with WebGL disabled |
 | `npm run contrast` | Measures real contrast per phase against WCAG AA: the hero, each stop's title over its own scenery, and the highlighted phrases |
 | `npm run layout` | 22 viewport shapes × 2 pages: overflow, overlap and zoom reflow |
+| `npm run scenery` | 46 real window shapes × 3 screens: fails if any line of copy sits on the scenery |
+| `npm run skyline` | Re-measures where the scene's scenery is (`src/scene-skyline.json`). Run after re-exporting the `.riv` |
 | `npm run sync:assets` | Copies `assets/` originals to `public/` and `src/assets/` |
 | `npm run check:assets` | Verifies those copies have not drifted |
 
-The four QA commands need a preview running: `npm run build && npm run preview -- --port 4180`.
+The QA commands need a preview running: `npm run build && npm run preview -- --port 4180`.
 Override the target with `BASE_URL`.
 
 ### Zoom is a viewport size, not a mode
@@ -40,8 +42,9 @@ Override the target with `BASE_URL`.
 Zooming to 300% on a 1440x900 window gives the page a 480x300 CSS viewport — the height shrinks
 by the same factor as the width. Width-only breakpoints therefore miss zoom completely, which is
 how the hero once ended up with its badge and footer pushed off the bottom and a four-word
-headline set in five lines. `npm run layout` covers the shapes 125–500% zoom produces, and the
-rules that matter are keyed on `max-height` and aspect ratio rather than width alone.
+headline set in five lines. `npm run layout` covers the shapes 125–500% zoom produces. The copy
+itself is sized and placed from the room the scene actually leaves at that width *and* height
+(`useCopyFit`), so it follows zoom the same way it follows a short laptop window.
 
 Horizontal scrolling is the one thing never acceptable (WCAG 1.4.10). Scrolling *down* at high
 zoom is expected, and the audit budgets it rather than banning it.
@@ -91,8 +94,9 @@ screenshot matrix relies on it.
 src/
   config.ts          copy, Rive names, App Store + site constants
   phase-schedule.json  the four boundaries, shared with the build
-  lib/               pure logic: phase, prepaint, artboard, routes, headTags, frames, webgl
-  hooks/             usePhase, useReducedMotion, useViewportArtboard
+  scene-skyline.json the top of the scenery per screen, measured by `npm run skyline`
+  lib/               pure logic: phase, prepaint, artboard, sceneGeometry, copyFit, routes, …
+  hooks/             usePhase, useReducedMotion, useViewportArtboard, useCopyFit
   components/        RiveScene/RiveStage + the static UI
   content/           the legal documents, as JSX
   pages/             one createRoot entry per HTML document
@@ -113,6 +117,13 @@ hold copies the app loads by URL or bundles. `npm run check:assets` is what noti
   file belongs to interactions that run inside it.
 - **`.overlay` is `pointer-events: none`** so clicks reach the canvas. Anything added to the HTML
   layer that covers the lamp or a tree makes them *clickable while invisible*.
+- **The copy is placed by the scenery, not by breakpoints.** Both artboards cover-fit a fixed
+  picture, so on a short, wide window — a MacBook with the dock showing is 2:1 — the banner and the
+  board climb into the band under the header. `useCopyFit` places each screen's copy on the sky
+  above them from a measured skyline (`src/lib/copyFit.ts`, `src/lib/sceneGeometry.ts`), moving it
+  into the header's row or a side column before it shrinks the type, and keeps the two stops in
+  the same place where it can so the title does not jump between them on the walk. Re-export the
+  `.riv` and run `npm run skyline`, or it places the copy against scenery that has moved.
 - **The Rive canvas must never be the LCP element.** The headline paints first and is the LCP;
   the canvas fades in when it reports ready.
 - **`prefers-reduced-motion` alone governs playback.** There is deliberately no pause button.
