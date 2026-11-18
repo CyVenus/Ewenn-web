@@ -1,0 +1,16 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "app.ewenn",
+      "sha256_cert_fingerprints": [
+        "04:98:0F:7E:E2:19:4E:BD:5D:DB:B9:4E:CD:30:5D:D0:9C:B3:FE:84:EE:4F:4E:17:E4:FD:1F:CB:D3:6A:B6:21",
+        "CA:0E:17:1E:DA:2A:59:2F:BD:F2:91:91:F0:1C:D7:5A:97:23:0B:D5:E7:09:BF:52:F3:B7:4A:29:6D:BC:17:91",
+        "0B:7B:80:63:34:22:AF:F4:13:42:0B:79:B4:A2:16:EF:2F:60:02:AA:D2:DD:54:55:D3:52:E1:90:C1:6F:02:67",
+        "CC:63:F9:99:C3:22:37:B9:81:9C:8B:5A:66:0D:65:FA:51:2D:00:CA:87:D7:F1:F3:F9:47:82:8C:77:C3:CE:6D",
+        "99:63:6D:D1:56:36:95:5F:F6:F1:4D:94:17:EA:0D:C7:89:C0:CC:BF:E9:54:D0:07:1E:00:5B:71:B5:1F:89:63"
+      ]
+    }
+  }
+]
