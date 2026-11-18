@@ -20,17 +20,22 @@ import type { Doc } from './doc';
  *
  * The heading is "Terms of Use", not "Terms of Service" -- that is what the published
  * document and the App Store Connect record both say.
+ *
+ * Revised on 18 November 2026 for the Android app, which shares this page with iOS: billing
+ * is split by store, the App Store half keeping Apple's wording above and the Google Play half
+ * taking the Android app's in-app terms (`strings_legal.xml`, 21 October 2026). Coins and the
+ * AI section follow both in-app copies' October wording.
  */
 export const TERMS_DOC: Doc = {
   title: 'Terms of Use',
   description: 'The terms for using Ewenn.',
-  updated: 'Last updated 23 September 2026',
+  updated: 'Last updated 18 November 2026',
   path: '/terms/',
   body: (
     <>
       <p>
-        These terms cover your use of Ewenn, a focus companion app for iOS. By creating an account
-        you agree to them. If you do not, please do not use the app.
+        These terms cover your use of Ewenn, a focus companion app for iPhone, iPad and Android. By
+        creating an account you agree to them. If you do not, please do not use the app.
       </p>
 
       <h2>Your account</h2>
@@ -52,6 +57,12 @@ export const TERMS_DOC: Doc = {
       </p>
 
       <h3>Billing</h3>
+      <p>
+        You are billed by the store you subscribe through, and these terms follow it.
+      </p>
+      <p>
+        <strong>On an iPhone or iPad (the App Store):</strong>
+      </p>
       <ul>
         <li>Payment is charged to your Apple ID account at confirmation of purchase.</li>
         <li>
@@ -72,9 +83,25 @@ export const TERMS_DOC: Doc = {
         </li>
       </ul>
       <p>
-        Prices are shown in the app in your local currency and are set by us in App Store Connect.
-        Purchases are handled by Apple, and refunds are Apple's to give — you can request one through
-        Apple's support.
+        <strong>On Android (Google Play):</strong>
+      </p>
+      <ul>
+        <li>Payment is charged to your Google Play account when you confirm the purchase.</li>
+        <li>
+          The subscription <strong>renews automatically</strong> at the end of each period until you
+          cancel it, and each renewal is charged at the price shown in the app for your region.
+        </li>
+        <li>
+          You can manage or cancel your subscription at any time in{' '}
+          <strong>Google Play → Payments &amp; subscriptions</strong>. Cancel before the renewal date
+          and you won't be charged for the next period.
+        </li>
+        <li>If a free trial is offered, you won't be charged if you cancel before it ends.</li>
+      </ul>
+      <p>
+        Prices are shown in the app in your local currency and are set by us. Purchases are handled
+        by Apple or Google Play, depending on where you subscribed, and refunds follow that store's
+        policies — you can request one through Apple's support or through Google Play.
       </p>
 
       <h3>If your subscription ends</h3>
@@ -89,8 +116,8 @@ export const TERMS_DOC: Doc = {
 
       <h2>Coins</h2>
       <p>
-        Coins are an in-app item you earn by completing checklist steps, claiming badges and
-        finishing challenges. They may also become available to buy in a future version of the app.
+        Coins are an in-app item you earn by completing checklist steps or goals, claiming badges
+        and finishing challenges. They may also become available to buy in a future version of the app.
       </p>
       <ul>
         <li>
@@ -137,8 +164,8 @@ export const TERMS_DOC: Doc = {
 
       <h2>AI-suggested steps</h2>
       <p>
-        Ewenn can suggest checklist steps for a goal. Suggestions are generated automatically and may
-        be wrong, odd or unhelpful — please use your own judgement. The feature is a convenience and
+        Ewenn can suggest checklist steps for a goal when you ask. Suggestions are generated
+        automatically and may be wrong, odd or unhelpful — please use your own judgement. The feature is a convenience and
         is never required: you can always write your own steps, and you can create a goal without
         using it at all.
       </p>

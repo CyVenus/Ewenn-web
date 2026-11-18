@@ -77,7 +77,7 @@ export const SUPPORT_DOC: Doc = {
         your account uses, or tell us your username, so we can be sure the request is yours.
       </p>
       <p>
-        Deleting the app from your iPhone does not delete your account.
+        Deleting the app from your phone or tablet does not delete your account.
       </p>
 
       <h2>Rewenn — the optional subscription</h2>

@@ -43,8 +43,8 @@ describe.each(DOCS)('%s document', (name, doc) => {
  */
 describe('legal invariants', () => {
   it('keeps the published dates on privacy and terms', () => {
-    expect(PRIVACY_DOC.updated).toBe('Last updated 23 September 2026');
-    expect(TERMS_DOC.updated).toBe('Last updated 23 September 2026');
+    expect(PRIVACY_DOC.updated).toBe('Last updated 18 November 2026');
+    expect(TERMS_DOC.updated).toBe('Last updated 18 November 2026');
   });
 
   it('reaches the same contact address from every document', () => {
@@ -57,5 +57,18 @@ describe('legal invariants', () => {
   it('states Apple auto-renewal terms in the Terms document', () => {
     const { container } = render(<div>{TERMS_DOC.body}</div>);
     expect(container.textContent?.toLowerCase()).toContain('renew');
+  });
+
+  /**
+   * The Android app links here too, from its sign-in screen and its paywall, and its Google Play
+   * listing names this privacy policy -- so both pages must describe Play as well as Apple.
+   */
+  it('covers Google Play billing and Play Integrity beside Apple', () => {
+    const terms = render(<div>{TERMS_DOC.body}</div>).container.textContent ?? '';
+    expect(terms).toContain('Apple ID account');
+    expect(terms).toContain('Google Play → Payments & subscriptions');
+    const privacy = render(<div>{PRIVACY_DOC.body}</div>).container.textContent ?? '';
+    expect(privacy).toContain('App Attest');
+    expect(privacy).toContain('Play Integrity');
   });
 });

@@ -7,30 +7,37 @@ import type { Doc } from './doc';
  * same day when the app began asking before it sends a goal to Gemini (Guideline 5.1.2(i);
  * the app repo's `GoalStepConsent`) and Resend was added to the list of services.
  *
+ * Revised on 18 November 2026 for the Android app, which shares this page with iOS: Google
+ * Play billing and Play Integrity beside the App Store and App Attest, and the push token
+ * both apps have registered since October. It now covers what both in-app copies say (iOS's
+ * `LegalDocument.swift` and Android's `strings_legal.xml`, both 22 October 2026), each of which
+ * names only its own platform's store, sign-in and attestation.
+ *
  * Every claim here is a description of the app's code rather than boilerplate -- no photo
  * leaves the device because the project has no Cloud Storage, and no avatar another user sees
  * is a picture: it is a figure or a preset drawn from the app's own art (`functions/src/avatar.ts`
  * resolves nothing else); the Gemini
  * disclosure is conditional because the app asks first and uses the on-device model for a free
- * account whenever there is one -- a Rewenn account asks Gemini first on every device;
+ * account on an iPhone or iPad whenever there is one -- Android has no on-device model, and a
+ * Rewenn account asks Gemini first on every device;
  * "no analytics" is the vendor floor the app holds itself to. If any of those change,
  * this file and the date at the top change in the same commit.
  *
- * Three consumers depend on the URL: App Store Connect's app record, both Rewenn
- * subscription products, and the paywall inside the binary (Guideline 3.1.2). The
- * published `/privacy.html` is kept alive as an alias for them (see lib/docAliases).
+ * Consumers depend on the URL: App Store Connect's app record, both Rewenn subscription
+ * products, the paywall inside both binaries (Guideline 3.1.2), and the Google Play listing.
+ * The published `/privacy.html` is kept alive as an alias for them (see lib/docAliases).
  */
 export const PRIVACY_DOC: Doc = {
   title: 'Privacy Policy',
   description: 'How Ewenn handles your data.',
-  updated: 'Last updated 23 September 2026',
+  updated: 'Last updated 18 November 2026',
   path: '/privacy/',
   body: (
     <>
       <p>
-        Ewenn is a focus companion app for iOS. This policy explains what the app collects, where it
-        goes, and what it never does. It is written to be checked rather than skimmed, so it says
-        plainly where data is stored and which companies can see it.
+        Ewenn is a focus companion app for iPhone, iPad and Android. This policy explains what the app
+        collects, where it goes, and what it never does. It is written to be checked rather than
+        skimmed, so it says plainly where data is stored and which companies can see it.
       </p>
 
       <h2>What we collect</h2>
@@ -38,7 +45,7 @@ export const PRIVACY_DOC: Doc = {
       <h3>Your account</h3>
       <p>
         You need an account to use Ewenn. You can create one with an email address and password, or
-        by signing in with Google or Apple. We receive:
+        by signing in with Google, or with Apple on an iPhone or iPad. We receive:
       </p>
       <ul>
         <li>
@@ -91,24 +98,36 @@ export const PRIVACY_DOC: Doc = {
 
       <h3>Purchases</h3>
       <p>
-        If you subscribe to Rewenn, your subscription status is held by RevenueCat and Apple.{' '}
-        <strong>We never see your payment details</strong> — Apple handles the transaction and tells
-        us only whether a subscription is active.
+        If you subscribe to Rewenn, your subscription status is held by RevenueCat and by the store
+        you subscribed through — Apple's App Store on an iPhone or iPad, or Google Play on Android.{' '}
+        <strong>We never see your payment details</strong> — the store handles the transaction and
+        tells us only whether a subscription is active.
+      </p>
+
+      <h3>Notifications</h3>
+      <p>
+        If you allow notifications, Ewenn registers your device with Firebase Cloud Messaging so a
+        friend request, a cheer or news from a challenge can reach you. For that we store a{' '}
+        <strong>push token</strong> — the address Apple or Google delivers a notification to — and
+        your device's <strong>time zone</strong>, so challenge news is not sent in the middle of your
+        night. Signing out switches the token off, and deleting your account removes it. Reminders
+        about your streak and goals are scheduled on your device and never sent from our servers.
       </p>
 
       <h3>Technical</h3>
       <p>
-        The app uses Apple's App Attest to confirm that requests come from a genuine copy of Ewenn
-        rather than from a script. This protects other users from spam and abuse.
+        To confirm that requests come from a genuine copy of Ewenn rather than from a script, the app
+        uses Apple's App Attest on an iPhone or iPad, and Google Play Integrity on Android. This
+        protects other users from spam and abuse.
       </p>
 
       <h2>What never leaves your device</h2>
 
       <div className="doc__note">
         <p>
-          <strong>Ewenn never uploads a photo from your iPhone.</strong> It has no photo storage on
-          its servers at all, and it does not use your Google profile photo. Your avatar is always
-          made from Ewenn's own pictures, and you can change it, or remove it, at any time.
+          <strong>Ewenn never uploads a photo from your phone or tablet.</strong> It has no photo
+          storage on its servers at all, and it does not use your Google profile photo. Your avatar is
+          always made from Ewenn's own pictures, and you can change it, or remove it, at any time.
         </p>
       </div>
 
@@ -127,23 +146,29 @@ export const PRIVACY_DOC: Doc = {
       <p>We do not sell your data. We use a small number of services to make the app work:</p>
       <ul>
         <li>
-          <strong>Google Firebase</strong> — sign-in, database, server functions and hosting. Your
-          account and everything listed above is stored here.
+          <strong>Google Firebase</strong> — sign-in, database, server functions, hosting and push
+          notifications. Your account and everything listed above is stored here.
         </li>
         <li>
-          <strong>Google Gemini</strong> — <strong>only if you allow it.</strong> To suggest
-          checklist steps for a goal, Ewenn sends the goal's <em>title and description</em> — and, for
-          a rewrite, <em>its current steps and your instruction</em> — to Google's Gemini API. The app
-          asks before it sends anything and names Gemini when it does; if you choose Not Now, nothing
-          is sent. For a free account on an iPhone or iPad with Apple Intelligence, suggestions are
-          made on the device and nothing is sent at all. Rewenn subscribers' suggestions use Gemini.
+          <strong>Google Gemini</strong> — <strong>only if you allow it.</strong> When you ask Ewenn
+          to suggest checklist steps for a goal, it sends the goal's <em>title and description</em>{' '}
+          — and, for a rewrite, <em>its current steps and your instruction</em> — to Google's Gemini
+          API. The app asks before it sends anything and names Gemini when it does; if you choose Not
+          Now, nothing is sent. For a free account on an iPhone or iPad with Apple Intelligence,
+          suggestions are made on the device and nothing is sent at all. On Android, and for Rewenn
+          subscribers on any device, suggestions use Gemini.
         </li>
         <li>
           <strong>Resend</strong> — delivers Ewenn's emails, such as the six-digit code that verifies
           an email sign-up. It receives your email address.
         </li>
         <li>
-          <strong>Apple</strong> — Sign in with Apple, App Store purchases, and App Attest.
+          <strong>Apple</strong> — on an iPhone or iPad: Sign in with Apple, App Store purchases, App
+          Attest, and delivering notifications.
+        </li>
+        <li>
+          <strong>Google</strong> — signing in with Google; and on Android, Google Play purchases, Play
+          Integrity, and delivering notifications.
         </li>
         <li>
           <strong>RevenueCat</strong> — subscription status, linked to your Ewenn account identifier.
@@ -161,8 +186,9 @@ export const PRIVACY_DOC: Doc = {
         </li>
         <li>
           <strong>No analytics or crash-reporting services.</strong> Ewenn contains no analytics SDK
-          and no crash reporter. If that ever changes, this page and the app's App Store privacy
-          labels change with it, and we will say so in the app before it takes effect.
+          and no crash reporter. If that ever changes, this page, the App Store privacy labels and the
+          Data safety section of our Google Play listing change with it, and we will say so in the app
+          before it takes effect.
         </li>
         <li>
           <strong>We do not sell or rent your data</strong> to anyone.
