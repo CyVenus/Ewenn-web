@@ -17,8 +17,8 @@ describe('buildHeadTags', () => {
 
   it('emits an absolute share image, which relative URLs cannot be', () => {
     const tags = buildHeadTags({ siteUrl: 'https://ewenn.app', appStoreId: '', path: '/' });
-    expect(find(tags, 'property', 'og:image')?.attrs.content).toBe('https://ewenn.app/og-image.png');
-    expect(find(tags, 'name', 'twitter:image')?.attrs.content).toBe('https://ewenn.app/og-image.png');
+    expect(find(tags, 'property', 'og:image')?.attrs.content).toBe('https://ewenn.app/og-image.png?v=2');
+    expect(find(tags, 'name', 'twitter:image')?.attrs.content).toBe('https://ewenn.app/og-image.png?v=2');
   });
 
   it('tolerates a trailing slash on the origin', () => {

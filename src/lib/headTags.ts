@@ -17,9 +17,11 @@ export function buildHeadTags({
   path: string;
 }): HeadTag[] {
   const origin = siteUrl.replace(/\/+$/, '');
+  // `?v=2` is the 2026-10-24 share image; bump it whenever og-image.png changes.
+  const shareImage = `${origin}/og-image.png?v=2`;
   const tags: HeadTag[] = [
-    { tag: 'meta', attrs: { property: 'og:image', content: `${origin}/og-image.png` } },
-    { tag: 'meta', attrs: { name: 'twitter:image', content: `${origin}/og-image.png` } },
+    { tag: 'meta', attrs: { property: 'og:image', content: shareImage } },
+    { tag: 'meta', attrs: { name: 'twitter:image', content: shareImage } },
   ];
   if (origin) {
     tags.push({ tag: 'link', attrs: { rel: 'canonical', href: `${origin}${path}` } });
